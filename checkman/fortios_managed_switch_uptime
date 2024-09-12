@@ -1,0 +1,18 @@
+title: Fortios: Managed switch uptime
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the uptime of the connected switches of a Fortigate firewall.
+ This check receives the data from the “fortios_managed_switch_health” check.
+ Threshold values are not available, only the performance data is recorded.
+
+ This check receives its data via a piggyback mechanism.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per switch is created.

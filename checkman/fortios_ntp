@@ -1,0 +1,20 @@
+title: Fortios: Ntp
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the NTP servers of a Fortigate firewall.
+ It changes the status to {crit} if there is no NTP server available.
+ 
+ By default, the check also goes to {crit} if the stratum is greater than 4.
+ The time deviation is also monitored. 
+ The check switches to {warn} at 0.2 seconds and to {crit} at 0.5 seconds.
+
+ All values can be parameterized using a rule.
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created.

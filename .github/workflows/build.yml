@@ -1,0 +1,39 @@
+name: build
+
+on:
+  pull_request:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Checkmk package
+    runs-on: ubuntu-latest
+    container:
+      image: checkmk/check-mk-raw:2.2.0-latest
+
+    env:
+      OMD_ROOT: /omd/sites/cmk
+      OMD_SITE: cmk
+      CMK_SITE_ID: cmk
+      WORKSPACE: ${{ github.workspace }}
+
+    steps:
+      - name: Initialize Checkmk Site
+        run: /docker-entrypoint.sh /bin/true
+      - uses: actions/checkout@v4
+
+      - name: Setup links
+        run: .devcontainer/symlink.sh
+      - name: Update GITHUB_PATH
+        run: echo "/omd/sites/cmk/bin" >> $GITHUB_PATH
+
+      - name: Build Extension
+        run: .devcontainer/build.sh
+        id: cmkpkg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.cmkpkg.outputs.pkgfile }}
+          path: ${{ steps.cmkpkg.outputs.pkgfile }}

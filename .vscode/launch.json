@@ -1,0 +1,79 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Aktuelle Datei",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "cmk - check",
+            "type": "python",
+            "request": "launch",
+            "program": "~/bin/cmk",
+            "args": [
+            "-vv",
+            "--debug",
+            "-n",
+            "${input:envHOST}"
+            ],
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "cmk - discover",
+            "type": "python",
+            "request": "launch",
+            "program": "~/bin/cmk",
+            "args": [
+            "-vv",
+            "--debug",
+            "-I",
+            "${input:envHOST}"
+            ],
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "cmk - rediscover",
+            "type": "python",
+            "request": "launch",
+            "program": "~/bin/cmk",
+            "args": [
+            "-vv",
+            "--debug",
+            "-II",
+            "${input:envHOST}"
+            ],
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "cmk - agent build",
+            "type": "python",
+            "request": "launch",
+            "program": "~/bin/cmk",
+            "args": [
+            "-vv",
+            "--debug",
+            "-A",
+            "-f",
+            "${input:envHOST}"
+            ],
+            "console": "integratedTerminal",
+        }
+    ],
+    "inputs": [
+        {
+          "id": "envHOST",
+          "type": "command",
+          "command": "extension.commandvariable.file.content",
+          "args": {
+            "fileName": "${workspaceFolder}/.env",
+            "key": "CHECKHOST"
+          }
+        }
+    ]
+}

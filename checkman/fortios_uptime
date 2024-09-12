@@ -1,0 +1,16 @@
+title: Fortios: Uptime
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the uptime of a Fortigate firewall.
+ Threshold values are not available, 
+ only the performance data is recorded.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per firewall is created.

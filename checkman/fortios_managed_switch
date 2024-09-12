@@ -1,0 +1,25 @@
+title: Fortios: Managed switch
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors all switches which are managed and connected to a Fortigate firewall.
+ Each existing switch is additionally monitored using piggyback data.
+ You need to configure the Checkmk DCD (Dynamice Configuration Deamon) 
+ for the Fortigate firewall host.
+ The switches are then created as independent hosts in Checkmk.
+ A switch switches to the status {crit} when it is no longer connected.
+
+ The switches include the following checks:
+  - CPU utilization of the switch
+  - Memory utilization of the switch
+  - All the Interfaces of the switch
+  - POE usage of the switch
+  - Uptime of the switch
+ 
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per switch is created on the Fortigate firewall.

@@ -1,0 +1,17 @@
+title: Fortios: HA history
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the HA history of a Fortigate firewall cluster.
+ It is only available if a cluster has also been configured.
+ The check is always OK and never issues an error.
+ The last 7 messages are output.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created.

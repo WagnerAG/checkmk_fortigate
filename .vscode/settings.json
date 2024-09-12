@@ -1,0 +1,9 @@
+{
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.defaultInterpreterPath": "/omd/sites/cmk/bin/python3",
+    "editor.defaultFormatter": "charliermarsh.ruff"
+}

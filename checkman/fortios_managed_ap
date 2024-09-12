@@ -1,0 +1,26 @@
+title: Fortios: Managed ap
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors all WiFi APs which are managed and connected to a Fortigate firewall.
+ Each existing access point is monitored.
+ The status of an access point is displayed as {crit}, 
+ if it is not connected.
+ Various values are also monitored, such as
+  - CPU utilization of the access point
+  - Memory utilization of the access point
+  - The number of connected clients
+  - The bandwidth of the LAN interface
+  - The error rate of the LAN interface
+  - The collision rate of the LAN interface
+  - The dropped packets from the LAN interface
+
+ Additional helpful information is displayed in the details.
+ 
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per access point is created.

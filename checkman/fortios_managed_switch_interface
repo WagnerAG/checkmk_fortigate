@@ -1,0 +1,20 @@
+title: Fortios: Managed switch interface
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the interfaces of the connected switches of a Fortigate firewall.
+ With the help of the “fortios_switch_interface_discovery_parameter” rule 
+ can be used to configure the interfaces to be monitored based on the description.
+ Regex must be used for this.
+ The performance data is collected per interface.
+
+ This check receives its data via a piggyback mechanism.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per interface is created.

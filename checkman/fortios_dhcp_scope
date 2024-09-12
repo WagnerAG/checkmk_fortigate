@@ -1,0 +1,19 @@
+title: Fortios: DHCP scope
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the DHCP scopes of a Fortigate firewall.
+ It changes the status to {crit} or {warn}, 
+ depending on the threshold values set.
+ If conflicts are detected, the status also turns to {warn}.
+ The default values are 80 and 90% of the size of the IP range.
+ The check shows some data about the scope.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per DHCP scope is created.

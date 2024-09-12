@@ -1,0 +1,18 @@
+title: Fortios: Resources cpu
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the CPU utilization of a Fortigate firewall.
+ It receives the data from the “fortios_resources” check.
+ Threshold values are 80% {warn} and 90% {crit} by default.
+ The threshold values can be adjusted using the rule 
+ "FortiOS CPU usage levels".
+ 
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per firewall is created.

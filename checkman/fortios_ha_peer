@@ -1,0 +1,16 @@
+title: Fortios: HA peer
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the HA history of a Fortigate firewall cluster.
+ It is only available if a cluster has been configured.
+ This check issues an error as soon as there is a problem with the Fortigate HA.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created.

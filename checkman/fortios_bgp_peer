@@ -1,0 +1,18 @@
+title: Fortios: BGP Peer
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the BGP peers of a Fortigate firewall.
+ It changes the status to {crit} if the respective BGP peer 
+ status is not set to “Established”.
+ The check shows the local IP of the peer, 
+ the remote AS and the remote IP of the peer.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per bgp peer is created.

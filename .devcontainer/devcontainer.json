@@ -1,0 +1,43 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/ubuntu
+{
+	"name": "Checkmk",
+	"build": {
+		"dockerfile": "Dockerfile",
+		// Update 'VARIANT' to pick an Ubuntu version: focal, bionic
+		"args": {
+			"VARIANT": "2.2.0-latest"
+		}
+	},
+	// Set *default* container specific settings.json values on container create.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"littlefoxteam.vscode-python-test-adapter",
+				"rioj7.command-variable",
+				"ms-azuretools.vscode-docker",
+				"charliermarsh.ruff"
+			],
+			// set some specific settings
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+			},
+			"python.defaultInterpreterPath": "/omd/sites/cmk/bin/python3"
+		}
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": ".devcontainer/symlink.sh",
+	// Use postStartCommand to start the site
+	"postStartCommand": "omd start",
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "cmk",
+	"remoteEnv": {
+		"PATH": "/omd/sites/cmk/bin:/omd/sites/cmk/local/lib/python3/bin/:${containerEnv:PATH}",
+		"OMD_ROOT": "/omd/sites/cmk",
+		"OMD_SITE": "cmk",
+		"CMK_SITE_ID": "cmk",
+		"WORKSPACE": "${containerWorkspaceFolder}"
+	}
+}

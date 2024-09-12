@@ -1,0 +1,122 @@
+---
+name: 🐛 Bug Report
+description: Create a report to help us improve this check!
+title: "🐛 Bug: <title>"
+labels: ["type: bug", "status: needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        1. Please speak `English`.
+        2. Make sure you are using the latest version and take a moment to check that your issue hasn't been reported before.
+        3. It's really important to provide pertinent details and logs,
+           incomplete details will be handled as an invalid report.
+        <br />
+
+  - type: dropdown
+    id: priority-type
+    attributes:
+      label: Priority
+      description: |
+        How critical is the issue?
+        Do not abuse this. Issues that completely break this check would be classified as critical.
+        If you are requesting a new feature, then it would be low or normal.
+      options:
+        - "Low"
+        - "Normal"
+        - "High"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: checkmk-edition
+    attributes:
+      label: CheckMK Edition
+      description: |
+        What CheckMK edition are you running this check as?
+      options:
+        - "Enterprise"
+        - "Raw"
+        - "Cloud"
+        - "MSP"
+
+  - type: dropdown
+    id: checkmk-version
+    attributes:
+      label: CheckMK Version
+      description: |
+        What CheckMK version are you running this check as?
+      options:
+        - "2.2.0"
+        - "2.3.0"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Please provide a description of your issue here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log-traceback
+    attributes:
+      label: Logs Copy/Paste / CheckMK Crash Report
+      description: |
+        Copy all information you have about the bug, including crash report and error messages.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-reproduce
+    attributes:
+      label: Steps To Reproduce
+      description: |
+        Describe the steps that need taken by the developer(s) to get the error / issue you're experiencing.
+      value: |
+        - 
+        - 
+        - 
+        - 
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: |
+        Describe what you expect this check to actually do if it were working properly
+      value: |
+        - 
+        - 
+        - 
+        - 
+
+  - type: textarea
+    id: agent-output
+    attributes:
+      label: Agent output
+      description: |
+        Paste the complete agent output here.
+
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referenced Issues
+      description: |
+        List any existing issues this ticket may be associated with.
+        Structure each issue as:
+           - #NUMBER
+           - #3
+      value: |
+        - #
+
+  - type: textarea
+    id: attachment-screenshots
+    attributes:
+      label: "Attachments: Screenshots"
+      description: |
+        Please provide screenshots of any errors or the issue you're having. 
+        Gifs are even better.

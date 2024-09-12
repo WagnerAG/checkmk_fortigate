@@ -1,0 +1,22 @@
+title: Fortios: Interface
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the Interfaces of a Fortigate firewall.
+ All interfaces are monitored by default, provided that 
+ no discovery rule has been configured.
+ This check supports multiple Fortigate VDOMs.
+
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service per interface is created.
+ The discovery of interfaces can be configured.
+ The "discovery_fortios_interface" rule can be used to configure the 
+ detection of interfaces using regex.
+ It is also possible to recognize the interfaces by description, 
+ name or alias.

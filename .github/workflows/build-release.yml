@@ -1,0 +1,55 @@
+name: build-release
+
+on:
+  push:
+    tags:
+    - 'v*'
+    - '!v*[a-z]'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    name: Build Release Package
+    runs-on: ubuntu-latest
+    container:
+      image: checkmk/check-mk-raw:2.2.0-latest
+
+    env:
+      OMD_ROOT: /omd/sites/cmk
+      OMD_SITE: cmk
+      CMK_SITE_ID: cmk
+      WORKSPACE: ${{ github.workspace }}
+
+    steps:
+      - name: Initialize Checkmk Site
+        run: /docker-entrypoint.sh /bin/true
+
+      - uses: actions/checkout@v4
+      - name: Setup links
+        run: .devcontainer/symlink.sh
+
+      - name: Update GITHUB_PATH
+        run: echo "/omd/sites/cmk/bin" >> $GITHUB_PATH
+
+      - name: Build Extension
+        run: .devcontainer/build.sh
+        id: cmkpkg
+
+      - name: Create Release
+        id: create_release
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ github.ref }}
+          title: Release ${{ github.ref }}
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./${{ steps.cmkpkg.outputs.pkgfile }}
