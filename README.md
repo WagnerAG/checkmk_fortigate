@@ -31,6 +31,7 @@
 
 ## Special thanks
 
+* To [dampfhamm3r](https://github.com/dampfhamm3r) he had the idea for the project and needed a lot of perseverance to work on it. 
 * To [ELLR](https://github.com/ellr/) he supported us and carried out code reviews
 * To [yogibaer75](https://github.com/yogibaer75) he answered many of our questions at the CheckMK conference.
 
