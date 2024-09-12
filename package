@@ -5,11 +5,12 @@
     "files": {
         "agent_based": [
             "fortios_bgp_peer.py",
-            "fortios_dhcp_scope.py",
-            "fortios_dhcp_lease.py",
             "fortios_device_info_inventory.py",
+            "fortios_dhcp_lease.py",
+            "fortios_dhcp_scope.py",
             "fortios_ha_history.py",
             "fortios_ha_peer.py",
+            "fortios_interface_cmdb.py",
             "fortios_interface.py",
             "fortios_ipsec.py",
             "fortios_license.py",
