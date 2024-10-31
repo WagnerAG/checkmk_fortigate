@@ -89,7 +89,7 @@ def check_fortios_managed_switch(item: str, section: Switch) -> CheckResult:
     if switch.status == "Connected":
         yield Result(state=State.OK, summary=switch.summary, details=switch.details)
     else:
-        yield Result(state=State.ERROR, summary=switch.summary, details=switch.defails)
+        yield Result(state=State.CRIT, summary=switch.summary, details=switch.details)
 
 
 register.check_plugin(
