@@ -23,7 +23,7 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 from __future__ import annotations
 
 import json
-from typing import Mapping
+from typing import Mapping, Optional
 
 from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     Result,
@@ -41,7 +41,7 @@ class Switch(BaseModel, frozen=True):
     serial: str
     state: str
     fgt_peer_intf_name: str
-    connecting_from: str
+    connecting_from: Optional[str]
     join_time: str
     type: str
     is_l3: str
