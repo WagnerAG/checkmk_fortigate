@@ -61,8 +61,10 @@ class Interface(BaseModel):
     rx_packets: int
     tx_bytes: int
     if_out_bps: Optional[int] = 0
+    if_out_errors: Optional[int] = 0
     rx_bytes: int
     if_in_bps: Optional[int] = 0
+    if_in_errors: Optional[int] = 0
     tx_errors: int
     rx_errors: int
     vlanid: Optional[int] = None
@@ -81,6 +83,14 @@ class Interface(BaseModel):
     def calculate_if_in_bps(cls, v, values):
         rx_bytes = values.get("rx_bytes")
         return rx_bytes * 8 if rx_bytes is not None else v
+
+    @validator("if_in_errors", always=True)
+    def map_if_in_errors(cls, v, values):
+        return values.get("rx_errors", 0)
+
+    @validator("if_out_errors", always=True)
+    def map_if_in_discards(cls, v, values):
+        return values.get("tx_errors", 0)
 
     # convert speed from (bps) to (Bps)
     @validator("speed", always=True)
@@ -148,12 +158,15 @@ def discovery_fortios_interfaces(params: Mapping[str, Any], section_fortios_inte
     item_discovery_link_status = params["item_discovery_link_status"]
 
     for item in section_fortios_interfaces:
+        interface_name: None
         interface = section_fortios_interfaces.get(item)
-        interface_cmdb = section_fortios_interfaces_cmdb.get(interface.name)
-    
-        interface.description = interface_cmdb.description
-        interface.interface_type = interface_cmdb.type
-        interface_name = interface.name
+        interface_cmdb = section_fortios_interfaces_cmdb.get(interface.id)
+
+        if interface_cmdb:
+            interface.description = interface_cmdb.description
+            interface.interface_type = interface_cmdb.type
+        else:
+            interface_name = interface.id
 
         if item_discovery_by_type == "descr" and (interface.description) is not None:
                 interface_name = interface.description
