@@ -93,7 +93,7 @@ _SECTIONS = [
         name="interfaces_cmdb",
         path="cmdb/system/interface",
         min_version=_REST_VERSION,
-    ),   
+    ),  
     _SectionSpec(
         name="vdom_resources",
         path="monitor/system/vdom-resource?vdom=*",
@@ -337,6 +337,7 @@ def agent_fortios(args: Args) -> int:
 
     for spec in _filter_applicable_sections(_SECTIONS):
         try:
+            data = None
             data = fortios.collect_section_data(spec)
         
         except Exception:
@@ -354,8 +355,11 @@ def agent_fortios(args: Args) -> int:
                 status_check = data[0]["status"]
             elif isinstance(data, dict):
                 status_check = data["status"]
-            
-            if status_check == "success":
+            else:
+                status_check = None
+                _LOGGER.error(f"Data is not a dict and not a list: {data} for spec: {spec.name}")
+
+            if status_check == "success" and data is not None:
                 with SectionWriter(f"fortios_{spec.name}") as writer:
                     writer.append_json(data)
 
@@ -373,6 +377,9 @@ def agent_fortios(args: Args) -> int:
     switch_data = managed_switch.get("results")
 
     for switch in switch_status_data:
+        if switch.get("status") != "Connected":
+            _LOGGER.error(f"Switch status is not connected: {switch.get('status')}")
+            continue
         switch_serial = switch.get("serial")
 
         # map the ports stat data to the correct switch
