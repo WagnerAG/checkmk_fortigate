@@ -233,8 +233,8 @@ def parse_fortios_switch_interface(string_table) -> Mapping[str, PhysicalPort] |
 
     except (ValueError, IndexError):
         return None
-    
-    return {item["port_name"]: PhysicalPort(**item) for item in all_port_status}
+
+    return {item["port_name"]: PhysicalPort(**item) for item in all_port_status if item.get("type") != "trunk"}
 
 
 def discovery_fortios_switch_interface(params: Mapping[str, Any], section: Mapping[str, PhysicalPort]) -> DiscoveryResult:
