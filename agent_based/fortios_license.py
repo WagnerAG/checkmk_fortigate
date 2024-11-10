@@ -73,7 +73,12 @@ class FortiGuardModule(ModuleInterface):
 
     @property
     def summary(self):
-        next_scheduled_update = render.timespan(self.next_scheduled_update - time.time())
+        # CheckMK 2.2 does not support negative timespans
+        next_update = self.next_scheduled_update
+        if next_update < 0:
+            next_update = 0
+        next_scheduled_update = render.timespan(next_update - time.time())
+        
         return f'Supported: {self.supported} WAN IP: {self.fortigate_wan_ip}, Scheduled Update: {self.scheduled_updates_enabled}, Next update: {next_scheduled_update}'
 
 class SupportDetail(BaseModel):
@@ -123,9 +128,9 @@ class AppCtrlModule(ModuleInterface):
     expires: int
     entitlement: str
     last_update: int
-    last_update_attempt: int
-    last_update_result_status: str
-    last_update_method_status: str
+    last_update_attempt: Optional[int]
+    last_update_result_status: Optional[str]
+    last_update_method_status: Optional[str]
 
     def module_name(self) -> str:
         return "appctrl"
@@ -236,7 +241,7 @@ def discovery_fortios_license(params: Mapping[str, Any], section: Mapping[str, s
 
 
 def convert_number_of_days(epoch_time):
-    days, remainder = divmod(epoch_time - time.time(), 86400)
+    days, _ = divmod(epoch_time - time.time(), 86400)
     return days
 
 
