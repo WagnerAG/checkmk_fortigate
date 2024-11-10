@@ -42,7 +42,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import (
 
 from .fortios_resources import FortiResource
 
-DEFAULT_MEMORY_LEVELS: Dict = {"memory_levels": (70.0, 80.0)}
+DEFAULT_MEMORY_LEVELS: Dict = {"levels": (70.0, 80.0)}
 
 
 def discovery_fortios_resources_memory(section: FortiResource) -> DiscoveryResult:
@@ -73,7 +73,7 @@ register.check_plugin(
     service_name="Memory usage",
     sections=["fortios_vdom_resources"],
     discovery_function=discovery_fortios_resources_memory,
-    check_ruleset_name="fortios_resources_memory",
+    check_ruleset_name="memory",
     check_function=check_fortios_resources_memory,
     check_default_parameters=DEFAULT_MEMORY_LEVELS,
 )
