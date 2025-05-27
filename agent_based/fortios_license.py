@@ -144,7 +144,7 @@ class AppCtrlModule(ModuleInterface):
 class WebFilteringModule(ModuleInterface):
     type: str = "live_fortiguard_service"
     status: str
-    expires: int
+    expires: Optional[int] = None # Optional, as it is not present if license is not active
     entitlement: str
     category_list_version: int
     running: bool
@@ -286,8 +286,14 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
                 levels_lower=day_levels,
                 render_func=lambda v: f"{v:.0f} days",
             )
-
-        yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels)
+        else:
+            yield Result(
+                state=State.OK,
+                summary=(f"Status: {license.status}, Entitlement: {license.entitlement}, "
+                         f"Running: {license.running}"),
+            )
+        if license.expires is not None and str(license.expires).isdigit():
+            yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels)
 
     elif item == "appctrl":
         if license.status == "licensed":
