@@ -72,7 +72,6 @@ class FortiIPSec(BaseModel):
     outgoing_bytes: Optional[int] = 0
     parent: Optional[str] = None
     rgwy: Optional[str] = None
-    rport: Optional[str] = None
     tun_id: Optional[str] = None  # IPv4
     tun_id6: Optional[str] = None  # IPv6
     username: Optional[str] = None  # IPv4
