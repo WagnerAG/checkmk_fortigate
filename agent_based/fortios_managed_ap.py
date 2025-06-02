@@ -67,11 +67,11 @@ class HealthMetric(BaseModel):
 
 
 class HealthSection(BaseModel):
-    channel_utilization: Optional[HealthMetric]
-    client_count: Optional[HealthMetric]
-    interfering_ssids: Optional[HealthMetric]
-    infra_interfering_ssids: Optional[HealthMetric]
-    overall: Optional[HealthMetric]
+    channel_utilization: Optional[HealthMetric] = None
+    client_count: Optional[HealthMetric] = None
+    interfering_ssids: Optional[HealthMetric] = None
+    infra_interfering_ssids: Optional[HealthMetric] = None
+    overall: Optional[HealthMetric] = None
 
 
 class GeneralHealth(BaseModel):
@@ -81,36 +81,36 @@ class GeneralHealth(BaseModel):
 
 
 class AccessPointHealth(BaseModel):
-    general: Optional[GeneralHealth]
-    channel_utilization: Optional[HealthMetric]
-    client_count: Optional[HealthMetric]
-    interfering_ssids: Optional[HealthMetric]
-    infra_interfering_ssids: Optional[HealthMetric]
-    overall: Optional[HealthMetric]
+    general: Optional[GeneralHealth] = None
+    channel_utilization: Optional[HealthMetric] = None
+    client_count: Optional[HealthMetric] = None
+    interfering_ssids: Optional[HealthMetric] = None
+    infra_interfering_ssids: Optional[HealthMetric] = None
+    overall: Optional[HealthMetric] = None
 
 
 class Radio(BaseModel):
     radio_id: int
     mode: str
-    all_ssids: Optional[bool]
-    auto_txpower: Optional[bool]
-    background_scan_enabled: Optional[bool]
-    bandwidth_rx: Optional[int]
-    bandwidth_tx: Optional[int]
-    base_bssid: Optional[str]
-    bytes_rx: Optional[int]
-    bytes_tx: Optional[int]
-    channel_utilization: Optional[bool]
-    channel_utilization_percent: Optional[int]
-    channel_utilization_timestamp: Optional[int]
-    channels: Optional[List[str]]
-    client_count: Optional[int]
-    country_code: Optional[int]
-    country_name: Optional[str]
-    detect_interfering: Optional[bool]
-    detected_rogue_aps: Optional[int]
-    detected_rogue_infra_aps: Optional[int]
-    health: Optional[AccessPointHealth]
+    all_ssids: Optional[bool] = None
+    auto_txpower: Optional[bool] = None
+    background_scan_enabled: Optional[bool] = None
+    bandwidth_rx: Optional[int] = None
+    bandwidth_tx: Optional[int] = None
+    base_bssid: Optional[str] = None
+    bytes_rx: Optional[int] = None
+    bytes_tx: Optional[int] = None
+    channel_utilization: Optional[bool] = None
+    channel_utilization_percent: Optional[int] = None
+    channel_utilization_timestamp: Optional[int] = None
+    channels: Optional[List[str]] = None
+    client_count: Optional[int] = None
+    country_code: Optional[int] = None
+    country_name: Optional[str] = None
+    detect_interfering: Optional[bool] = None
+    detected_rogue_aps: Optional[int] = None
+    detected_rogue_infra_aps: Optional[int] = None
+    health: Optional[AccessPointHealth] = None
 
 
 class SSIDRadio(BaseModel):
@@ -143,7 +143,7 @@ class AccessPoint(BaseModel):
     ssid: List[SSIDRadio]
     lldp: Optional[List[LLDP]] = None
     lldp_enable: bool
-    os_version: Optional[str]
+    os_version: Optional[str] = None
     radio: List[Radio]
     eos: Optional[bool] = False
     wired: List[WiredInterface]
@@ -187,8 +187,8 @@ class AccessPoint(BaseModel):
             AP MAC: {self.board_mac}
             Last reboot: {self.last_reboot_time}
             
-            Health:
-            - AP general: {self.health.general.overall.severity}
+            Health: 
+            - AP general: {self.health.general.overall.severity}  # todo: general is missing -> 2.3.0p28
             {radio_health}
             SSIDs:\n{ssid_result}
             LLDP information:
