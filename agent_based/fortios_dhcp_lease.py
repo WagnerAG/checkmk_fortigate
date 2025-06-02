@@ -32,17 +32,10 @@ from pydantic import BaseModel
 
 
 class DhcpLease(BaseModel):
-    ip: Optional[str]
-    reserved: bool
-    mac: Optional[str]
-    vci: Optional[str]
-    hostname: Optional[str]
-    expire_time: Optional[int]
-    status: Optional[str]
-    interface: Optional[str]
-    type: Optional[str]
+    ip: Optional[str] = None
+    mac: str
+    status: Optional[str] = None
     server_mkey: int
-    server_ipam_enabled: bool
 
 
 def parse_fortios_dhcp_lease(string_table) -> Mapping[str, DhcpLease] | None:
