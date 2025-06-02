@@ -6,7 +6,7 @@
 		"dockerfile": "Dockerfile",
 		// Update 'VARIANT' to pick an Ubuntu version: focal, bionic
 		"args": {
-			"VARIANT": "2.2.0-latest"
+			"VARIANT": "2.3.0-latest"
 		}
 	},
 	// Set *default* container specific settings.json values on container create.
