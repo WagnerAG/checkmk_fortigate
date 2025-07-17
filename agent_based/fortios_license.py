@@ -220,10 +220,10 @@ class LicenseStatus(BaseModel):
 
 def parse_fortios_license(string_table) -> Mapping[str, str] | None:
     try:
-        json_data = json.loads(string_table[0][0])
+        json_data = json.loads(string_table[0][0])        
     except ValueError:
-        json_data = {}
-
+        json_data = {} # Just defers the crash to line 226       
+    
     license_modules = LicenseStatus(**json_data)
 
     return {key: item for key, item in license_modules.results.items()}

@@ -61,7 +61,7 @@ class InterfaceData(BaseModel):
 
 class PhysicalPort(BaseModel):
     access_mode: str
-    admin_vlan: Optional[str]
+    admin_vlan: Optional[str] = None
     aggregator_mode: str
     allowed_vlans_all: str
     arp_inspection_trust: str
@@ -104,12 +104,12 @@ class PhysicalPort(BaseModel):
     packet_sampler: str
     pause_meter: int
     pause_meter_resume: str
-    poe_capable: Optional[int]
+    poe_capable: Optional[int] = None
     poe_max_power: str
     poe_pre_standard_detection: str
     poe_standard: str
-    poe_status: Optional[str]
-    poe_: Optional[str]
+    poe_status: Optional[str] = None
+    poe_: Optional[str] = None
     port_name: str
     port_number: int
     port_owner: str
@@ -123,10 +123,10 @@ class PhysicalPort(BaseModel):
     rpvst_port: str
     sample_direction: str
     sflow_counter_interval: int
-    speed: Optional[Union[str, int]]
+    speed: Optional[Union[str, int]] = None
     speed_mask: int
     stacking_port: int
-    status: Optional[str]
+    status: Optional[str] = None
     sticky_mac: str
     storm_control_policy: str
     stp_bpdu_guard: str
@@ -137,29 +137,29 @@ class PhysicalPort(BaseModel):
     trunk_member: int
     type: str
     virtual_port: int
-    vlan: Optional[str]
-    collisions: int
-    crc_alignments: int
-    fragments: int
-    jabbers: int
-    l3packets: int
-    rx_bcast: int
-    rx_bytes: int
-    rx_drops: int
-    rx_errors: int
-    rx_mcast: int
-    rx_oversize: int
-    rx_packets: int
-    rx_ucast: int
-    tx_bcast: int
-    tx_bytes: int
-    tx_drops: int
-    tx_errors: int
-    tx_mcast: int
-    tx_oversize: int
-    tx_packets: int
-    tx_ucast: int
-    undersize: int
+    vlan: Optional[str] = None
+    collisions: Optional[int] = None
+    crc_alignments: Optional[int] = None
+    fragments: Optional[int] = None
+    jabbers: Optional[int] = None
+    l3packets: Optional[int] = None
+    rx_bcast: Optional[int] = None
+    rx_bytes: Optional[int] = None
+    rx_drops: Optional[int] = None
+    rx_errors: Optional[int] = None
+    rx_mcast: Optional[int] = None
+    rx_oversize: Optional[int] = None
+    rx_packets: Optional[int] = None
+    rx_ucast: Optional[int] = None
+    tx_bcast: Optional[int] = None
+    tx_bytes: Optional[int] = None
+    tx_drops: Optional[int] = None
+    tx_errors: Optional[int] = None
+    tx_mcast: Optional[int] = None
+    tx_oversize: Optional[int] = None
+    tx_packets: Optional[int] = None
+    tx_ucast: Optional[int] = None
+    undersize: Optional[int] = None
     duplex: Optional[str] = None
     port_status: Optional[str] = None
     igmp_snooping_group: Optional[IgmpSnoopingGroup] = None
@@ -262,7 +262,11 @@ def check_fortios_switch_interface(item: str, section: Mapping[str, PhysicalPort
 
     for key in ["rx_bytes", "tx_bytes", "tx_mcast", "tx_bcast", "rx_mcast", "rx_bcast", "rx_errors", "tx_errors", "tx_drops", "rx_drops", "collisions", "crc_alignments"]:
         if hasattr(interface, key):
-            attribute = getattr(interface, key)
+            attribute = getattr(interface, key)            
+            # e.g. LACP-ports do not seem to provide any of the possible values for key, therefore skip
+            if attribute is None: 
+                continue
+
             value = 0
             try:
                 value = get_rate(value_store, f"{key}", time_now, attribute, raise_overflow=False)

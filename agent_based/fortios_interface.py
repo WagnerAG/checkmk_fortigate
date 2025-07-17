@@ -44,7 +44,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.render import (
     nicspeed,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, RootModel, validator
 
 
 class Interface(BaseModel):
@@ -70,7 +70,7 @@ class Interface(BaseModel):
     vlanid: Optional[int] = None
     interface: Optional[str] = None
     vdom: Optional[str] = None
-    description: Optional[str]
+    description: Optional[str] = None
     interface_type: Optional[str] = None
 
     # convert bytes to bps
@@ -113,11 +113,11 @@ class VdomData(BaseModel):
         return v
 
 
-class VdomDataList(BaseModel):
-    __root__: List[VdomData]
+class VdomDataList(RootModel):
+    root: List[VdomData]
 
 
-VdomDataList.update_forward_refs()
+VdomDataList.model_rebuild()
 
 
 class Duplex(IntEnum):
@@ -139,10 +139,10 @@ def parse_fortios_interfaces(string_table):
     except (ValueError, IndexError):
         return None
 
-    data = VdomDataList.parse_obj(json_data)
+    data = VdomDataList.model_validate(json_data)
 
     combined_results = {}
-    for vdom_data in data.__root__:
+    for vdom_data in data.root:
         combined_results.update(vdom_data.results)
     return combined_results
 

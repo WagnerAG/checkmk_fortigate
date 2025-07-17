@@ -29,12 +29,12 @@ from typing import Optional
 
 import requests
 import urllib3
-from cmk.special_agents.utils.agent_common import (
+from cmk.special_agents.v0_unstable.agent_common  import (
     ConditionalPiggybackSection,
     SectionWriter,
     special_agent_main,
 )
-from cmk.special_agents.utils.argument_parsing import Args, create_default_argument_parser
+from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
 from requests.adapters import HTTPAdapter
 
 _LOGGER = logging.getLogger("agent_fortios")
@@ -342,9 +342,13 @@ def agent_fortios(args: Args) -> int:
         
         except Exception:
             _LOGGER.error(f"Collecting {spec.name} failed: {spec.path}")
+            sys.stdout.write("\n<<<>>>\n") # Hotfix: End previous-section. SectionError appends the error output to a working section otherwise. 
+                                           # CorrectSolution: SectionWriter+co should close its section on __exit__
             SectionError(f"Section error for spec: {spec.name} with path: {spec.path}")
             if args.debug:
                 return 1
+            else:
+                continue  # data still contains values from earlier _spec, so w/o continue data gets outputed in wrong section
 
         # piggybackdata handling
         if spec.piggyback and spec.piggyback_section == "switch":
