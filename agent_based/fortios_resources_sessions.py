@@ -65,7 +65,7 @@ def check_fortios_resources_sessions(params: Mapping[str, Any], section: FortiRe
         if isinstance(levels, dict)
         else check_levels(
             section.total_sessions,
-            metric_name="total_sessions",
+            metric_name="max_sessions",
             levels_upper=levels,
             label="Sessions",
             boundaries=(0, None),
