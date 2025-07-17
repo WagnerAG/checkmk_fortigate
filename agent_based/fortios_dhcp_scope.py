@@ -170,6 +170,9 @@ def check_fortios_dhcp_scope(item: str, params: Mapping[str, Any], section_forti
 
     scope = section_fortios_dhcp_scope.get(item)
 
+    if not scope:
+        return
+
     total_ip_count = []
     for ip_range in scope.ip_range:
         total_ip_count.append(int(ipaddress.IPv4Address(ip_range.end_ip)) - int(ipaddress.IPv4Address(ip_range.start_ip)) + 1)
