@@ -67,50 +67,28 @@ class HealthMetric(BaseModel):
 
 
 class HealthSection(BaseModel):
-    channel_utilization: Optional[HealthMetric] = None
-    client_count: Optional[HealthMetric] = None
-    interfering_ssids: Optional[HealthMetric] = None
-    infra_interfering_ssids: Optional[HealthMetric] = None
-    overall: Optional[HealthMetric] = None
+    channel_utilization: Optional[HealthMetric]
+    interfering_ssids: Optional[HealthMetric]
+    infra_interfering_ssids: Optional[HealthMetric]
+    overall: Optional[HealthMetric]
 
 
 class GeneralHealth(BaseModel):
     country_code: HealthMetric
     uplink_status: List[HealthMetric]
-    overall: HealthMetric
+    overall: Optional[HealthMetric]
 
 
 class AccessPointHealth(BaseModel):
-    general: Optional[GeneralHealth] = None
-    channel_utilization: Optional[HealthMetric] = None
-    client_count: Optional[HealthMetric] = None
-    interfering_ssids: Optional[HealthMetric] = None
-    infra_interfering_ssids: Optional[HealthMetric] = None
-    overall: Optional[HealthMetric] = None
+    general: Optional[GeneralHealth] = HealthMetric(value=99, severity="Unknown")
+    overall: Optional[HealthMetric] = HealthMetric(value=99, severity="Unknown")
 
 
 class Radio(BaseModel):
     radio_id: int
     mode: str
-    all_ssids: Optional[bool] = None
-    auto_txpower: Optional[bool] = None
-    background_scan_enabled: Optional[bool] = None
-    bandwidth_rx: Optional[int] = None
-    bandwidth_tx: Optional[int] = None
-    base_bssid: Optional[str] = None
-    bytes_rx: Optional[int] = None
-    bytes_tx: Optional[int] = None
-    channel_utilization: Optional[bool] = None
-    channel_utilization_percent: Optional[int] = None
-    channel_utilization_timestamp: Optional[int] = None
-    channels: Optional[List[str]] = None
-    client_count: Optional[int] = None
-    country_code: Optional[int] = None
-    country_name: Optional[str] = None
-    detect_interfering: Optional[bool] = None
-    detected_rogue_aps: Optional[int] = None
-    detected_rogue_infra_aps: Optional[int] = None
-    health: Optional[AccessPointHealth] = None
+    client_count: Optional[int] = 0
+    health: Optional[AccessPointHealth] = "Unknown"
 
 
 class SSIDRadio(BaseModel):
@@ -143,7 +121,7 @@ class AccessPoint(BaseModel):
     ssid: List[SSIDRadio]
     lldp: Optional[List[LLDP]] = None
     lldp_enable: bool
-    os_version: Optional[str] = None
+    os_version: Optional[str] = "Unknown"
     radio: List[Radio]
     eos: Optional[bool] = False
     wired: List[WiredInterface]
@@ -187,8 +165,8 @@ class AccessPoint(BaseModel):
             AP MAC: {self.board_mac}
             Last reboot: {self.last_reboot_time}
             
-            Health: 
-            - AP general: {self.health.general.overall.severity}  # todo: general is missing -> 2.3.0p28
+            Health:
+            - AP general: {self.health.general.overall.severity}
             {radio_health}
             SSIDs:\n{ssid_result}
             LLDP information:
@@ -203,7 +181,6 @@ def parse_fortios_managed_ap(string_table) -> Mapping[str, AccessPoint] | None:
         return None
     if (forti_aps := json_data.get("results")) in ({}, []):
         return None
-
     return {item["name"]: AccessPoint(**item) for item in forti_aps}
 
 
