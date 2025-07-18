@@ -1,7 +1,7 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/ubuntu/.devcontainer/base.Dockerfile
 
-# [Choice] Ubuntu version: 2.1.0-latest, 2.2.0-latest, 2.3.0-latest
-ARG VARIANT="2.3.0-latest"
+# [Choice] Ubuntu version: 2.1.0-latest, 2.2.0-latest
+ARG VARIANT="2.2.0p40"
 FROM checkmk/check-mk-cloud:${VARIANT}
 
 ARG USERNAME=cmk
@@ -12,7 +12,7 @@ RUN /docker-entrypoint.sh /bin/true
 
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends nodejs gcc mlocate vim
+    && apt-get -y install --no-install-recommends nodejs gcc mlocate
 
 RUN usermod --uid $USER_UID $USERNAME \
     && mkdir -p ${WORKSPACE} \
