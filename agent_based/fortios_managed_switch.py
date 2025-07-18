@@ -32,7 +32,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 class Switch(BaseModel, frozen=True):
@@ -52,7 +52,6 @@ class Switch(BaseModel, frozen=True):
     led_blink_supported: bool
     os_version: str
 
-    @field_validator('is_l3', mode='before')
     @classmethod
     def stringify(cls, value) -> str:
         if value is not None:
@@ -82,7 +81,6 @@ def parse_fortios_managed_switch(string_table) -> Mapping[str, Switch] | None:
         # Latest firmware update renamed field?
         if item.get("name") is None:
             item["name"] = item["switch-id"]
-    
     return {item["name"]: Switch(**item) for item in forti_switches}
 
 

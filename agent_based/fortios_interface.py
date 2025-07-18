@@ -44,7 +44,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.render import (
     nicspeed,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, RootModel, validator
+from pydantic import BaseModel, validator
 
 
 class Interface(BaseModel):
@@ -113,11 +113,11 @@ class VdomData(BaseModel):
         return v
 
 
-class VdomDataList(RootModel):
-    root: List[VdomData]
+class VdomDataList(BaseModel):
+    __root__: List[VdomData]
 
 
-VdomDataList.model_rebuild()
+VdomDataList.update_forward_refs()
 
 
 class Duplex(IntEnum):
@@ -138,11 +138,9 @@ def parse_fortios_interfaces(string_table):
         json_data = json.loads(string_table[0][0])
     except (ValueError, IndexError):
         return None
-
-    data = VdomDataList.model_validate(json_data)
-
+    data = VdomDataList.parse_obj(json_data)
     combined_results = {}
-    for vdom_data in data.root:
+    for vdom_data in data.__root__:
         combined_results.update(vdom_data.results)
     return combined_results
 
