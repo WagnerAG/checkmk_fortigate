@@ -81,6 +81,6 @@
     "version": "1.0.3",
     "version.min_required": "2.2.0p1",
     "version.max_required": "2.2.0p44",
-    "version.usable_until": None,
+    "version.usable_until": "2.2.0p44",
     "version.packaged": "2.2.0p40",
 }
