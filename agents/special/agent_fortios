@@ -427,9 +427,14 @@ def agent_fortios(args: Args) -> int:
             None,
         )
         # map the switch data to the correct switch
-        switch_data_result = next(
-            (item for item in switch_data if item.get("switch-id") == switch_id), None
-        )
+        if "7.2" in managed_switch["version"]:
+            switch_data_result = next(
+                (item for item in switch_data if item.get("switch-id") == switch_serial), None
+            )
+        else:
+            switch_data_result = next(
+                (item for item in switch_data if item.get("switch-id") == switch_id), None
+            )
         # map the switch health data to the correct switch
         switch_health_data_result = switch_health_data.get(switch.get("serial"))
 
