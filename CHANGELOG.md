@@ -25,6 +25,15 @@
 
 ---
 
+## [1.0.3] - 2025-07-21
+
+### 🐛 Fixed
+- Improved special agent for Fortigate 7.2 and 7.4 (Switch interfaces)
+- Compatibility for CMK 2.2.x
+- Fixed wrong imports at `FortiOS devices` view
+
+---
+
 ## [1.0.0] - 2024-09-12
 
 ### 🚀 Added
