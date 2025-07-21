@@ -156,21 +156,21 @@ def discovery_fortios_interfaces(params: Mapping[str, Any], section_fortios_inte
     item_discovery_link_status = params["item_discovery_link_status"]
 
     for item in section_fortios_interfaces:
-        interface_name: None
         interface = section_fortios_interfaces.get(item)
         interface_cmdb = section_fortios_interfaces_cmdb.get(interface.id)
 
         if interface_cmdb:
+            interface_name = interface_cmdb.name
             interface.description = interface_cmdb.description
             interface.interface_type = interface_cmdb.type
         else:
             interface_name = interface.id
 
         if item_discovery_by_type == "descr" and (interface.description) is not None:
-                interface_name = interface.description
-
+            interface_name = interface.description
+        
         elif item_discovery_by_type == "alias" and (interface.alias) is not None:
-                interface_name = interface.alias
+            interface_name = interface.alias
 
         if not any(re.search(pattern, interface_name) for pattern in params["fortios_interface_excluded"]):
             if item_discovery_link_status:
