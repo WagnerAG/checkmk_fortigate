@@ -30,7 +30,8 @@
 ### 🐛 Fixed
 - Improved special agent for Fortigate 7.2 and 7.4 (Switch interfaces)
 - Compatibility for CMK 2.2.x
-- Fixed wrong imports at `FortiOS devices` view
+- Wrong imports at `FortiOS devices` view
+- FortiGate interface discovery should work even if a non-existent interface pattern is given in the exclusion list
 
 ---
 
