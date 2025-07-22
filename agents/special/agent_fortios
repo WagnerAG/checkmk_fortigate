@@ -426,25 +426,31 @@ def agent_fortios(args: Args) -> int:
             (item for item in switch_port_stats if item.get("serial") == switch_serial),
             None,
         )
+        
         # map the switch data to the correct switch
         if "7.2" in managed_switch["version"]:
             switch_data_result = next(
                 (item for item in switch_data if item.get("switch-id") == switch_serial), None
             )
+            switch_health_data_result = switch_health_data.get(switch.get("serial"))
+
+            with ConditionalPiggybackSection(switch["name"]):
+                with SectionWriter("fortios_managed_switch_interface") as writer:
+                    writer.append_json(
+                        {
+                            "switch_port_stats": switch_port_stats_result,
+                            "switch_ports": switch,
+                            "switch_status": switch_data_result
+                        }
+                    )
+                with SectionWriter("fortios_managed_switch_health") as writer:
+                    writer.append_json(switch_health_data_result)
         else:
             switch_data_result = next(
                 (item for item in switch_data if item.get("switch-id") == switch_id), None
             )
-        # map the switch health data to the correct switch
-        switch_health_data_result = switch_health_data.get(switch.get("serial"))
+            switch_health_data_result = switch_health_data.get(switch.get("switch-id"))
 
-        if "7.2" in managed_switch["version"]:
-            with ConditionalPiggybackSection(switch["name"]):
-                with SectionWriter("fortios_managed_switch_interface") as writer:
-                    writer.append_json({"switch_port_stats": switch_port_stats_result, "switch_ports": switch, "switch_status": switch_data_result})
-                with SectionWriter("fortios_managed_switch_health") as writer:
-                    writer.append_json(switch_health_data_result)
-        else:    
             with ConditionalPiggybackSection(switch["switch-id"]):
                 with SectionWriter("fortios_managed_switch_interface") as writer:
                     writer.append_json(
