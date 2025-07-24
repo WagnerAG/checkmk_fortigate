@@ -99,7 +99,8 @@ class Interface(BaseModel):
 
     @property
     def summary(self):
-        return f"{self.alias if self.alias != '' else self.description if self.description else ''} VDOM: {self.vdom}, Duplex: {Duplex(self.duplex)}, VLAN: {self.vlanid}, IP: {self.ip}/{self.mask}, Parent: {self.interface}"
+        description = (f"{self.alias if self.alias != '' else self.description if self.description else ''}").replace("(", "[").replace(")", "]")
+        return f"{description} ({Link(self.link)}), VDOM: {self.vdom}, Duplex: {Duplex(self.duplex)}, VLAN: {self.vlanid}, IP: {self.ip}/{self.mask}, Parent: {self.interface}"
 
 
 class VdomData(BaseModel):
@@ -118,6 +119,14 @@ class VdomDataList(BaseModel):
 
 
 VdomDataList.update_forward_refs()
+
+
+class Link(IntEnum):
+    up = True
+    down = False
+
+    def __str__(self):
+        return self.name
 
 
 class Duplex(IntEnum):
@@ -168,7 +177,7 @@ def discovery_fortios_interfaces(params: Mapping[str, Any], section_fortios_inte
 
         if item_discovery_by_type == "descr" and (interface.description) is not None:
             interface_name = interface.description
-        
+
         elif item_discovery_by_type == "alias" and (interface.alias) is not None:
             interface_name = interface.alias
 
@@ -185,6 +194,10 @@ def check_fortios_interfaces(item: str, section_fortios_interfaces, section_fort
     if not interface:
         yield Result(state=State.UNKNOWN, summary="Interface %s is missing" % (item))
         return
+    if not interface.link:
+        yield Result(state=State.CRIT, summary=interface.summary)
+    else:
+        yield Result(state=State.OK, summary=interface.summary)
 
     value_store = get_value_store()
     now_time = time.time()
@@ -213,8 +226,6 @@ def check_fortios_interfaces(item: str, section_fortios_interfaces, section_fort
                     label="Out",
                     render_func=networkbandwidth,
                 )
-
-    yield Result(state=State.OK, summary=interface.summary)
 
     yield from check_levels(
         value=interface.speed,
