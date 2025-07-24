@@ -28,6 +28,7 @@ from cmk.gui.plugins.wato.utils import (
 from cmk.gui.valuespec import (
     Dictionary,
     ListOfStrings,
+    Checkbox,
 )
 
 
@@ -36,13 +37,23 @@ def _parameter_valuespec_interface() -> Dictionary:
         title=_("FortiOS switch interface discovery"),
         elements=[
             (
+                "fortios_switch_interface_discovery_link_status",
+                Checkbox(
+                    title=_("Discover only interfaces with link status up"),
+                    help=_("This option makes checkmk discover only active interfaces."),
+                    label=_("Discover only active interfaces"),
+                    default_value=False,
+                ),
+            ),
+            (
                 "fortios_switch_interface_discovered",
                 ListOfStrings(
                     title=_("List of interface descriptions to be discovered"),
                     help=_("Interface by description they should be discovered by monitoring"),
                 ),
             ),
-        ]
+        ],
+        optional_keys=[],
     )
 
 

@@ -90,7 +90,7 @@ class PhysicalPort(BaseModel):
     lldp_status: str
     loop_guard: str
     loop_guard_timeout: int
-    mac_addr: str # Used
+    mac_addr: str  # Used
     matched_dpp_intf_tags: str
     matched_dpp_policy: str
     max_bundle: int
@@ -174,7 +174,7 @@ class PhysicalPort(BaseModel):
     @property
     def summary(self):
         port_power = str(f"{self.port_power:.2f} W")
-        return f"[{self.description if self.description != '' else ''}], ({self.port_status}), MAC: {self.mac_addr}, Media Type: {self.media_type}, Speed: {self.speed}, Duplex: {self.duplex}, PoE Power: {port_power if Power(self.power_status) == 2 else Power(self.power_status)}"
+        return f"{f'[{self.description}]' if self.description else ''} ({self.port_status}), MAC: {self.mac_addr}, Media Type: {self.media_type}, Speed: {self.speed}, Duplex: {self.duplex}, PoE Power: {port_power if Power(self.power_status) == 2 else Power(self.power_status)}"
 
 
 class Power(IntEnum):
@@ -190,7 +190,7 @@ class Power(IntEnum):
         return self.name
 
 
-DISCOVERY_DEFAULT_PARAMETERS = dict({"fortios_switch_interface_discovered": []})
+DISCOVERY_DEFAULT_PARAMETERS = dict({"fortios_switch_interface_discovered": [], "fortios_switch_interface_discovery_link_status": False})
 
 
 def replace_hyphens(d):
@@ -238,15 +238,18 @@ def parse_fortios_switch_interface(string_table) -> Mapping[str, PhysicalPort] |
 
 
 def discovery_fortios_switch_interface(params: Mapping[str, Any], section: Mapping[str, PhysicalPort]) -> DiscoveryResult:
+    interface_discovery_link_status = params["fortios_switch_interface_discovery_link_status"]
+    interface_discovery_desc = params["fortios_switch_interface_discovered"]
+
     for item in section:
         interface = section.get(item)
-
-        if interface.port_status == "up":
-            if params["fortios_switch_interface_discovered"]:
-                if any(re.search(pattern, interface.description) for pattern in params["fortios_switch_interface_discovered"]):
-                    yield Service(item=item)
-            else:
+        if interface_discovery_desc:
+            if any(re.search(pattern, interface.description) for pattern in interface_discovery_desc):
                 yield Service(item=item)
+        elif interface_discovery_link_status and interface.port_status != "up":
+            continue
+        else:
+            yield Service(item=item)
 
 
 def check_fortios_switch_interface(item: str, section: Mapping[str, PhysicalPort]) -> CheckResult:
@@ -254,17 +257,20 @@ def check_fortios_switch_interface(item: str, section: Mapping[str, PhysicalPort
     if not interface:
         yield Result(state=State.UNKNOWN, summary=f"Interface {item} is missing")
         return
-
-    yield Result(state=State.OK, summary=interface.summary)
+    if interface.port_status == "down":
+        yield Result(state=State.CRIT, summary=interface.summary)
+        return
+    else:
+        yield Result(state=State.OK, summary=interface.summary)
 
     value_store = get_value_store()
     time_now = time.time()
 
     for key in ["rx_bytes", "tx_bytes", "tx_mcast", "tx_bcast", "rx_mcast", "rx_bcast", "rx_errors", "tx_errors", "tx_drops", "rx_drops", "collisions", "crc_alignments"]:
         if hasattr(interface, key):
-            attribute = getattr(interface, key)            
+            attribute = getattr(interface, key)
             # e.g. LACP-ports do not seem to provide any of the possible values for key, therefore skip
-            if attribute is None: 
+            if attribute is None:
                 continue
 
             value = 0
