@@ -30,7 +30,6 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     Service,
     State,
     check_levels,
-    check_levels_predictive,
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import (
