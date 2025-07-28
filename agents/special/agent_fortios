@@ -324,6 +324,10 @@ class FortiOS:
             _LOGGER.error(f"Login failed: {e}")
             raise AuthError(f"Login failed {e}") from e
 
+        if section_response.status_code == 429:
+            _LOGGER.error(f"Collecting section: {spec.name} failed. Reason: HTTP status 429; error: ({section_response.status_code}) {section_response.reason}")
+            raise AuthError(f"IP address blacklisted or too many requests")
+
         if section_response.status_code != 200:
             _LOGGER.error(
                 f"Collecting section: {spec.name} failed. Reason: HTTP status not 200; error: ({section_response.status_code}) {section_response.reason}"
@@ -366,6 +370,12 @@ def agent_fortios(args: Args) -> int:
     for spec in _filter_applicable_sections(_SECTIONS):
         try:
             data = fortios.collect_section_data(spec)
+
+        except AuthError:
+            # no use trying any other sections, abort entire run
+            _LOGGER.error(f"Login failed while trying to collect {spec.name}: {spec.path}")
+            sys.stdout.write("\n<<<>>>\n")
+            break
 
         except Exception:
             _LOGGER.error(f"Collecting {spec.name} failed: {spec.path}")
