@@ -22,27 +22,28 @@ Check_MK WATO rule spec for FortiOS special agent
 from cmk.gui.i18n import _
 from cmk.gui.plugins.wato.utils import (
     CheckParameterRulespecWithItem,
+    Levels,
     RulespecGroupCheckParametersNetworking,
     rulespec_registry,
 )
-from cmk.gui.valuespec import Dictionary, TextInput, Integer, Tuple
-
+from cmk.gui.valuespec import Dictionary, TextInput, Transform
 
 def _resources_session_params():
-    return Tuple(
-        title=_("Thresholds for session count"),
-        elements=[
-            Integer(
-                title=_("Warning at"),
-                default_value=5000,
-                help=_("Session count at which a warning state is triggered."),
-            ),
-            Integer(
-                title=_("Critical at"),
-                default_value=10000,
-                help=_("Session count at which a critical state is triggered."),
-            ),
-        ],
+    return Transform(
+        Dictionary(
+            elements=[
+                (
+                    "levels",
+                    Levels(
+                        help=_("Thresholds for session count"),
+                        default_difference=(2.0, 4.0),
+                        default_levels=(5.0, 10.0),
+                    ),
+                )
+            ],
+            optional_keys=False,
+        ),
+        forth=lambda params: params if isinstance(params, dict) else {"levels": params},
     )
 
 

@@ -268,9 +268,9 @@ def check_fortios_switch_interface(item: str, section: Mapping[str, PhysicalPort
 
     for key in ["rx_bytes", "tx_bytes", "tx_mcast", "tx_bcast", "rx_mcast", "rx_bcast", "rx_errors", "tx_errors", "tx_drops", "rx_drops", "collisions", "crc_alignments"]:
         if hasattr(interface, key):
-            attribute = getattr(interface, key)
+            attribute = getattr(interface, key)            
             # e.g. LACP-ports do not seem to provide any of the possible values for key, therefore skip
-            if attribute is None:
+            if attribute is None: 
                 continue
 
             value = 0

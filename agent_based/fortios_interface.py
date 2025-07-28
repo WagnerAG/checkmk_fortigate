@@ -44,7 +44,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.render import (
     nicspeed,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, RootModel, validator
 
 
 class Interface(BaseModel):
@@ -114,11 +114,11 @@ class VdomData(BaseModel):
         return v
 
 
-class VdomDataList(BaseModel):
-    __root__: List[VdomData]
+class VdomDataList(RootModel):
+    root: List[VdomData]
 
 
-VdomDataList.update_forward_refs()
+VdomDataList.model_rebuild()
 
 
 class Link(IntEnum):
@@ -147,9 +147,11 @@ def parse_fortios_interfaces(string_table):
         json_data = json.loads(string_table[0][0])
     except (ValueError, IndexError):
         return None
-    data = VdomDataList.parse_obj(json_data)
+
+    data = VdomDataList.model_validate(json_data)
+
     combined_results = {}
-    for vdom_data in data.__root__:
+    for vdom_data in data.root:
         combined_results.update(vdom_data.results)
     return combined_results
 
@@ -165,6 +167,7 @@ def discovery_fortios_interfaces(params: Mapping[str, Any], section_fortios_inte
     item_discovery_link_status = params["item_discovery_link_status"]
 
     for item in section_fortios_interfaces:
+        interface_name: None
         interface = section_fortios_interfaces.get(item)
         interface_cmdb = section_fortios_interfaces_cmdb.get(interface.id)
 

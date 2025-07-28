@@ -32,15 +32,12 @@ from typing import Optional
 
 import requests
 import urllib3
-from cmk.special_agents.utils.agent_common import (
+from cmk.special_agents.v0_unstable.agent_common  import (
     ConditionalPiggybackSection,
     SectionWriter,
     special_agent_main,
 )
-from cmk.special_agents.utils.argument_parsing import (
-    Args,
-    create_default_argument_parser,
-)
+from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
 from requests.adapters import HTTPAdapter
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -369,6 +366,7 @@ def agent_fortios(args: Args) -> int:
 
     for spec in _filter_applicable_sections(_SECTIONS):
         try:
+            data = None
             data = fortios.collect_section_data(spec)
 
         except AuthError:
@@ -379,13 +377,9 @@ def agent_fortios(args: Args) -> int:
 
         except Exception:
             _LOGGER.error(f"Collecting {spec.name} failed: {spec.path}")
-            sys.stdout.write(
-                "\n<<<>>>\n"
-            )  # Hotfix: End previous-section. SectionError appends the error output to a working section otherwise.
-            # CorrectSolution: SectionWriter+co should close its section on __exit__
-            SectionError(
-                f"Section error for spec: {spec.name} with path: {spec.path}, {traceback.format_exc()}"
-            )
+            sys.stdout.write("\n<<<>>>\n") # Hotfix: End previous-section. SectionError appends the error output to a working section otherwise. 
+                                           # CorrectSolution: SectionWriter+co should close its section on __exit__
+            SectionError(f"Section error for spec: {spec.name} with path: {spec.path}")
             if args.debug:
                 return 1
             else:
@@ -400,8 +394,11 @@ def agent_fortios(args: Args) -> int:
                 status_check = data[0]["status"]
             elif isinstance(data, dict):
                 status_check = data["status"]
+            else:
+                status_check = None
+                _LOGGER.error(f"Data is not a dict and not a list: {data} for spec: {spec.name}")
 
-            if status_check == "success":
+            if status_check == "success" and data is not None:
                 with SectionWriter(f"fortios_{spec.name}") as writer:
                     writer.append_json(data)
 
@@ -422,6 +419,9 @@ def agent_fortios(args: Args) -> int:
     switch_data = managed_switch.get("results")
 
     for switch in switch_status_data:
+        if switch.get("status") != "Connected":
+            _LOGGER.error(f"Switch status is not connected: {switch.get('status')}")
+            continue
         switch_serial = switch.get("serial")
         switch_id = switch.get("switch-id")
 

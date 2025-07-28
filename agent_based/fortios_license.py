@@ -80,9 +80,8 @@ class FortiGuardModule(ModuleInterface):
         if next_update < 0:
             next_update = 0
         next_scheduled_update = render.timespan(next_update - time.time())
-
-        return f"Supported: {self.supported} WAN IP: {self.fortigate_wan_ip}, Scheduled Update: {self.scheduled_updates_enabled}, Next update: {next_scheduled_update}"
-
+        
+        return f'Supported: {self.supported} WAN IP: {self.fortigate_wan_ip}, Scheduled Update: {self.scheduled_updates_enabled}, Next update: {next_scheduled_update}'
 
 class SupportDetail(BaseModel):
     status: str
@@ -225,10 +224,10 @@ class LicenseStatus(BaseModel):
 
 def parse_fortios_license(string_table) -> Mapping[str, str] | None:
     try:
-        json_data = json.loads(string_table[0][0])
+        json_data = json.loads(string_table[0][0])        
     except ValueError:
-        json_data = {}  # Just defers the crash to line 226
-
+        json_data = {} # Just defers the crash to line 226       
+  
     license_modules = LicenseStatus(**json_data)
 
     return {key: item for key, item in license_modules.results.items()}

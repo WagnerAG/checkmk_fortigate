@@ -80,17 +80,17 @@ class GeneralHealth(BaseModel):
 
 
 class AccessPointHealth(BaseModel):
-    general: Optional[GeneralHealth] = None
-    overall: Optional[HealthMetric] = None
+    general: Optional[GeneralHealth] = HealthMetric(value=99, severity="Unknown")
+    overall: Optional[HealthMetric] = HealthMetric(value=99, severity="Unknown")
 
 
 class Radio(BaseModel):
     radio_id: int
     mode: str
     client_count: Optional[int] = 0
-    health: Optional[AccessPointHealth] = None
+    health: Optional[AccessPointHealth] = "Unknown"
 
-
+      
 class SSIDRadio(BaseModel):
     radio: int
     list: List[str]

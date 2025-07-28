@@ -32,7 +32,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class Switch(BaseModel, frozen=True):
@@ -81,6 +81,7 @@ def parse_fortios_managed_switch(string_table) -> Mapping[str, Switch] | None:
         # Latest firmware update renamed field?
         if item.get("name") is None:
             item["name"] = item["switch-id"]
+
     return {item["name"]: Switch(**item) for item in forti_switches}
 
 
