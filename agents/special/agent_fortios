@@ -170,12 +170,6 @@ _SECTIONS = [
         path="monitor/system/dhcp",
         min_version=_REST_VERSION,
     ),
-    # Crashes with 404 currently
-    # _SectionSpec(
-    #   name="sensors",
-    #   path="monitor/system/sensor-info",
-    #   min_version=_REST_VERSION,
-    # ),
 ]
 
 
