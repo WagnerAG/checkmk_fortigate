@@ -104,6 +104,7 @@ def test_parse_fortios_interfaces(string_table, expected_section) -> None:
                 ),
             },
             [
+                Result(state=State.OK, summary="Agg (up), VDOM: VDOM00, Duplex: FULL, VLAN: 3001, IP: 10.10.30.30/29, Parent: aggData01"),
                 Metric(name="rx_packets", value=0.0, boundaries=(0, None)),
                 Metric(name="tx_packets", value=0.0, boundaries=(0, None)),
                 Metric(name="if_in_bps", value=0.0, boundaries=(0, None)),

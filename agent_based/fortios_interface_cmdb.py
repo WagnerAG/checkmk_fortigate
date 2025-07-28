@@ -24,58 +24,26 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 from __future__ import annotations
 
 import json
-from typing import List, Optional
 
 from cmk.base.plugins.agent_based.agent_based_api.v1 import register
 from pydantic import BaseModel
 
 
 class InterfaceCMDB(BaseModel):
-    algorithm: Optional[str]
-    alias: str  # Needed
-    allowaccess: Optional[str]
-    arpforward: Optional[str]
-    bfd: Optional[str]
-    defaultgw: Optional[str]
-    description: str # Needed
-    detectprotocol: Optional[str]
-    detectserver: Optional[str]
-    devindex: Optional[int]
-    distance: Optional[int]
-    external: Optional[str]
-    gwdetect: Optional[str]
-    inbandwidth: Optional[int]
-    interface: str # Needed
-    internal: Optional[str]
-    ip: Optional[str]
-    ipmac: Optional[str]
-    ipunnumbered: Optional[str]
-    macaddr: str # Needed
-    mode: str # Needed
-    mtu: Optional[int]
-    name: str # Needed
-    ndiscforward: Optional[str]
-    outbandwidth: Optional[int]
-    password: Optional[str]
-    priority: Optional[int]
-    q_origin_key: str # Needed
-    role: Optional[str]
-    speed: Optional[str]
-    status: Optional[str]
-    stp: Optional[str]
-    stpforward: Optional[str]
-    subst: Optional[str]
-    tagging: List[str]
-    trunk: Optional[str]
-    type: str # Needed
-    username: Optional[str]
-    vdom: Optional[str]
-    vindex: Optional[int]
-    vlanforward: Optional[str]
-    vlanid: Optional[int]
-    vrf: Optional[int]
-    wccp: Optional[str]
-    weight: Optional[int]
+    alias: str
+    description: str = ""
+    interface: str
+    macaddr: str
+    mode: str
+    name: str
+    q_origin_key: str
+    type: str
+
+    @classmethod
+    def stringify(cls, value) -> str:
+        if value is not None:
+            return str(value)
+        return value
 
 
 def parse_fortios_interfaces_cmdb(string_table):

@@ -61,14 +61,16 @@ class Interface(BaseModel):
     rx_packets: int
     tx_bytes: int
     if_out_bps: Optional[int] = 0
+    if_out_errors: Optional[int] = 0
     rx_bytes: int
     if_in_bps: Optional[int] = 0
+    if_in_errors: Optional[int] = 0
     tx_errors: int
     rx_errors: int
     vlanid: Optional[int] = None
     interface: Optional[str] = None
     vdom: Optional[str] = None
-    description: Optional[str]
+    description: Optional[str] = None
     interface_type: Optional[str] = None
 
     # convert bytes to bps
@@ -82,6 +84,14 @@ class Interface(BaseModel):
         rx_bytes = values.get("rx_bytes")
         return rx_bytes * 8 if rx_bytes is not None else v
 
+    @validator("if_in_errors", always=True)
+    def map_if_in_errors(cls, v, values):
+        return values.get("rx_errors", 0)
+
+    @validator("if_out_errors", always=True)
+    def map_if_in_discards(cls, v, values):
+        return values.get("tx_errors", 0)
+
     # convert speed from (bps) to (Bps)
     @validator("speed", always=True)
     def calculate_speed(cls, value):
@@ -89,7 +99,8 @@ class Interface(BaseModel):
 
     @property
     def summary(self):
-        return f"{self.alias if self.alias != '' else self.description if self.description else ''} VDOM: {self.vdom}, Duplex: {Duplex(self.duplex)}, VLAN: {self.vlanid}, IP: {self.ip}/{self.mask}, Parent: {self.interface}"
+        description = (f"{self.alias if self.alias != '' else self.description if self.description else ''}").replace("(", "[").replace(")", "]")
+        return f"{description} ({Link(self.link)}), VDOM: {self.vdom}, Duplex: {Duplex(self.duplex)}, VLAN: {self.vlanid}, IP: {self.ip}/{self.mask}, Parent: {self.interface}"
 
 
 class VdomData(BaseModel):
@@ -110,6 +121,14 @@ class VdomDataList(BaseModel):
 VdomDataList.update_forward_refs()
 
 
+class Link(IntEnum):
+    up = True
+    down = False
+
+    def __str__(self):
+        return self.name
+
+
 class Duplex(IntEnum):
     DEFAULT = -1
     HALF = 0
@@ -128,9 +147,7 @@ def parse_fortios_interfaces(string_table):
         json_data = json.loads(string_table[0][0])
     except (ValueError, IndexError):
         return None
-
     data = VdomDataList.parse_obj(json_data)
-
     combined_results = {}
     for vdom_data in data.__root__:
         combined_results.update(vdom_data.results)
@@ -149,17 +166,20 @@ def discovery_fortios_interfaces(params: Mapping[str, Any], section_fortios_inte
 
     for item in section_fortios_interfaces:
         interface = section_fortios_interfaces.get(item)
-        interface_cmdb = section_fortios_interfaces_cmdb.get(interface.name)
-    
-        interface.description = interface_cmdb.description
-        interface.interface_type = interface_cmdb.type
-        interface_name = interface.name
+        interface_cmdb = section_fortios_interfaces_cmdb.get(interface.id)
+
+        if interface_cmdb:
+            interface_name = interface_cmdb.name
+            interface.description = interface_cmdb.description
+            interface.interface_type = interface_cmdb.type
+        else:
+            interface_name = interface.id
 
         if item_discovery_by_type == "descr" and (interface.description) is not None:
-                interface_name = interface.description
+            interface_name = interface.description
 
         elif item_discovery_by_type == "alias" and (interface.alias) is not None:
-                interface_name = interface.alias
+            interface_name = interface.alias
 
         if not any(re.search(pattern, interface_name) for pattern in params["fortios_interface_excluded"]):
             if item_discovery_link_status:
@@ -174,6 +194,10 @@ def check_fortios_interfaces(item: str, section_fortios_interfaces, section_fort
     if not interface:
         yield Result(state=State.UNKNOWN, summary="Interface %s is missing" % (item))
         return
+    if not interface.link:
+        yield Result(state=State.CRIT, summary=interface.summary)
+    else:
+        yield Result(state=State.OK, summary=interface.summary)
 
     value_store = get_value_store()
     now_time = time.time()
@@ -202,8 +226,6 @@ def check_fortios_interfaces(item: str, section_fortios_interfaces, section_fort
                     label="Out",
                     render_func=networkbandwidth,
                 )
-
-    yield Result(state=State.OK, summary=interface.summary)
 
     yield from check_levels(
         value=interface.speed,

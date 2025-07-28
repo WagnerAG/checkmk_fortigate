@@ -103,7 +103,7 @@ multisite_builtin_views.update(
             ],
             "group_painters": [],
             "sorters": [],
-            "context": {"hostregex": {"host_regex": "", "neg_host_regex": ""}, "inv_software_os_build": {"inv_software_os_build": ""}, "inv_software_os_version": {"inv_software_os_version": ""}, "inv_hardware_system_manufacturer": {"inv_hardware_system_manufacturer": "Fortinet"}, "has_inv": {"is_has_inv": "1"}},
+            "context": {"inv_software_os_build": {"inv_software_os_build": ""}, "inv_software_os_version": {"inv_software_os_version": ""}, "inv_hardware_system_manufacturer": {"inv_hardware_system_manufacturer": "Fortinet"}, "has_inv": {"is_has_inv": "1"}},
             "owner": UserId.builtin(),
             "megamenu_search_terms": [],
         },

@@ -68,7 +68,6 @@ class HealthMetric(BaseModel):
 
 class HealthSection(BaseModel):
     channel_utilization: Optional[HealthMetric]
-    client_count: Optional[HealthMetric]
     interfering_ssids: Optional[HealthMetric]
     infra_interfering_ssids: Optional[HealthMetric]
     overall: Optional[HealthMetric]
@@ -77,40 +76,19 @@ class HealthSection(BaseModel):
 class GeneralHealth(BaseModel):
     country_code: HealthMetric
     uplink_status: List[HealthMetric]
-    overall: HealthMetric
+    overall: Optional[HealthMetric]
 
 
 class AccessPointHealth(BaseModel):
-    general: Optional[GeneralHealth]
-    channel_utilization: Optional[HealthMetric]
-    client_count: Optional[HealthMetric]
-    interfering_ssids: Optional[HealthMetric]
-    infra_interfering_ssids: Optional[HealthMetric]
-    overall: Optional[HealthMetric]
+    general: Optional[GeneralHealth] = None
+    overall: Optional[HealthMetric] = None
 
 
 class Radio(BaseModel):
     radio_id: int
     mode: str
-    all_ssids: Optional[bool]
-    auto_txpower: Optional[bool]
-    background_scan_enabled: Optional[bool]
-    bandwidth_rx: Optional[int]
-    bandwidth_tx: Optional[int]
-    base_bssid: Optional[str]
-    bytes_rx: Optional[int]
-    bytes_tx: Optional[int]
-    channel_utilization: Optional[bool]
-    channel_utilization_percent: Optional[int]
-    channel_utilization_timestamp: Optional[int]
-    channels: Optional[List[str]]
-    client_count: Optional[int]
-    country_code: Optional[int]
-    country_name: Optional[str]
-    detect_interfering: Optional[bool]
-    detected_rogue_aps: Optional[int]
-    detected_rogue_infra_aps: Optional[int]
-    health: Optional[AccessPointHealth]
+    client_count: Optional[int] = 0
+    health: Optional[AccessPointHealth] = None
 
 
 class SSIDRadio(BaseModel):
@@ -143,7 +121,7 @@ class AccessPoint(BaseModel):
     ssid: List[SSIDRadio]
     lldp: Optional[List[LLDP]] = None
     lldp_enable: bool
-    os_version: Optional[str]
+    os_version: Optional[str] = "Unknown"
     radio: List[Radio]
     eos: Optional[bool] = False
     wired: List[WiredInterface]
@@ -203,7 +181,6 @@ def parse_fortios_managed_ap(string_table) -> Mapping[str, AccessPoint] | None:
         return None
     if (forti_aps := json_data.get("results")) in ({}, []):
         return None
-
     return {item["name"]: AccessPoint(**item) for item in forti_aps}
 
 

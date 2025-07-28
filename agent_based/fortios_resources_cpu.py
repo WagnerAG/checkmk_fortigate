@@ -42,7 +42,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import (
 
 from .fortios_resources import FortiResource
 
-DEFAULT_CPU_LEVELS: Dict = {"cpu_levels": (80.0, 90.0)}
+DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 
 
 def discovery_fortios_resources_cpu(section: FortiResource) -> DiscoveryResult:
@@ -74,7 +74,7 @@ register.check_plugin(
     service_name="CPU utilization",
     sections=["fortios_vdom_resources"],
     discovery_function=discovery_fortios_resources_cpu,
-    check_ruleset_name="fortios_resources_cpu",
+    check_ruleset_name="cpu_utilization",
     check_function=check_fortios_resources_cpu,
     check_default_parameters=DEFAULT_CPU_LEVELS,
 )

@@ -25,7 +25,7 @@ from cmk.gui.plugins.wato.utils import (
     RulespecGroupCheckParametersNetworking,
     rulespec_registry,
 )
-from cmk.gui.valuespec import Dictionary, Integer, TextInput, Tuple
+from cmk.gui.valuespec import Dictionary, TextInput, Integer, Tuple
 
 
 def _resources_session_params():

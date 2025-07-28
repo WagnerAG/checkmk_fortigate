@@ -1,7 +1,7 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/ubuntu/.devcontainer/base.Dockerfile
 
 # [Choice] Ubuntu version: 2.1.0-latest, 2.2.0-latest
-ARG VARIANT="2.2.0-latest"
+ARG VARIANT="2.2.0p40"
 FROM checkmk/check-mk-cloud:${VARIANT}
 
 ARG USERNAME=cmk

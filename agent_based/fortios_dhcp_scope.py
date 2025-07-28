@@ -141,7 +141,7 @@ def replace_hyphens(d):
         return d
 
 
-def parse_fortios_dhcp_scope(string_table) -> Mapping[str, DhcpServer]:
+def parse_fortios_dhcp_scope(string_table) -> Mapping[str, DhcpServer] | None:
     try:
         json_data = json.loads(string_table[0][0])
         json_data = replace_hyphens(json_data)
@@ -150,7 +150,7 @@ def parse_fortios_dhcp_scope(string_table) -> Mapping[str, DhcpServer]:
 
     if (forti_dhcp_scope := json_data.get("results")) in ({}, []):
         return None
-    
+
     return {str(ipaddress.IPv4Network(f"{item['default_gateway']}/{item['netmask']}", strict=False)): DhcpServer(**item) for item in forti_dhcp_scope}
 
 
@@ -169,7 +169,10 @@ def check_fortios_dhcp_scope(item: str, params: Mapping[str, Any], section_forti
     dhcp_levels = params.get("dhcp_scope_levels")
 
     scope = section_fortios_dhcp_scope.get(item)
-    
+
+    if not scope:
+        return
+
     total_ip_count = []
     for ip_range in scope.ip_range:
         total_ip_count.append(int(ipaddress.IPv4Address(ip_range.end_ip)) - int(ipaddress.IPv4Address(ip_range.start_ip)) + 1)

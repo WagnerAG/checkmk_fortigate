@@ -46,6 +46,12 @@ class DeviceInfo(BaseModel):
     build: str
     results: Optional[ModelInfo] = None
 
+    @classmethod
+    def stringify(cls, value) -> str:
+        if value is not None:
+            return str(value)
+        return value
+
 
 _MANUFACTURER = "Fortinet"
 
