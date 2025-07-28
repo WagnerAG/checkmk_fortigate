@@ -518,7 +518,7 @@ def test_parse_fortios_managed_switch_interface(string_table, expected_section) 
             [
                 Result(
                     state=State.OK,
-                    summary="[Test port], (up), MAC: 00:00:00:00:00:00, Media Type: RJ45, Speed: 10, Duplex: half, PoE Power: Searching",
+                    summary="[Test port] (up), MAC: 00:00:00:00:00:00, Media Type: RJ45, Speed: 10, Duplex: half, PoE Power: Searching",
                 ),
                 Result(state=State.OK, summary="In: 0.00 Bit/s"),
                 Metric(name="if_in_bps", value=0, boundaries=(0, None)),

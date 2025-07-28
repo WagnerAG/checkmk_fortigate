@@ -43,6 +43,7 @@ from pydantic import BaseModel, validator
 DISCOVERY_DEFAULT_PARAMETERS = {"features": ["fortiguard", "forticare", "appctrl", "web_filtering", "antivirus", "vdom"]}
 DEFAULT_LICENSE_EXPIRES_LEVEL: Dict = {"day_levels": (45, 30)}
 
+
 class ModuleInterface(BaseModel, ABC):
     type: str
 
@@ -53,6 +54,7 @@ class ModuleInterface(BaseModel, ABC):
     @abstractmethod
     def summary(self) -> str:
         pass
+
 
 # FortiGuard module
 class FortiGuardModule(ModuleInterface):
@@ -86,9 +88,11 @@ class SupportDetail(BaseModel):
     support_level: str
     expires: int
 
+
 class Support(BaseModel):
     hardware: Optional[SupportDetail]
     enhanced: SupportDetail
+
 
 # FortiCare module
 class FortiCareModule(ModuleInterface):
@@ -107,7 +111,7 @@ class FortiCareModule(ModuleInterface):
     @property
     def summary(self):
         expires_enhanced = render.timespan(self.support.enhanced.expires - time.time())
-        return f'Account: {self.account}, Status: {self.status}, Expires: {expires_enhanced}'
+        return f"Account: {self.account}, Status: {self.status}, Expires: {expires_enhanced}"
 
     @property
     def details(self):
@@ -117,7 +121,7 @@ class FortiCareModule(ModuleInterface):
         else:
             expires_hardware = "N/A"
             status_hardware = "N/A - virtual platform"
-        return f'Support Enhanced: {self.support.enhanced.status} expires in: {convert_number_of_days(self.support.enhanced.expires)} days, Support Hardware: {status_hardware} expires in: {expires_hardware})'
+        return f"Support Enhanced: {self.support.enhanced.status} expires in: {convert_number_of_days(self.support.enhanced.expires)} days, Support Hardware: {status_hardware} expires in: {expires_hardware})"
 
 
 # AppCtrl module
@@ -145,7 +149,7 @@ class AppCtrlModule(ModuleInterface):
 class WebFilteringModule(ModuleInterface):
     type: str = "live_fortiguard_service"
     status: str
-    expires: int
+    expires: Optional[int]
     entitlement: str
     category_list_version: int
     running: bool
@@ -167,9 +171,9 @@ class AntivirusModule(ModuleInterface):
     expires: int
     entitlement: str
     last_update: int
-    last_update_attempt: int
-    last_update_result_status: str
-    last_update_method_status: str
+    last_update_attempt: Optional[int]
+    last_update_result_status: Optional[str]
+    last_update_method_status: Optional[str]
     db_status: Optional[str] = None
     engine: Optional[Dict[str, Any]] = None
 
@@ -223,10 +227,11 @@ def parse_fortios_license(string_table) -> Mapping[str, str] | None:
         json_data = json.loads(string_table[0][0])        
     except ValueError:
         json_data = {} # Just defers the crash to line 226       
-    
+  
     license_modules = LicenseStatus(**json_data)
 
     return {key: item for key, item in license_modules.results.items()}
+
 
 def host_label_fortios_license(section: Mapping[str, str]) -> HostLabelGenerator:
     yield HostLabel("cmk/device_type", "firewall")
@@ -287,8 +292,13 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
                 levels_lower=day_levels,
                 render_func=lambda v: f"{v:.0f} days",
             )
-
-        yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels)
+        else:
+            yield Result(
+                state=State.OK,
+                summary=(f"Status: {license.status}, Entitlement: {license.entitlement}, Running: {license.running}"),
+            )
+        if license.expires is not None and str(license.expires).isdigit():
+            yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels)
 
     elif item == "appctrl":
         if license.status == "licensed":

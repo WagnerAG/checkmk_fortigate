@@ -10,7 +10,7 @@
 </div>
 
 <div align="center">
-  CheckMK special agent extension for Fortigate Firewalls and Switches
+  CheckMK special agent extension for Fortigate Firewalls, Switches and AccessPoints
   <br />
   <br />
   <a href="https://github.com/WagnerAG/checkmk_fortigate/issues/new?assignees=&labels=type+bug&template=bug_report.yaml&title=bug%3A+">Report a Bug</a>
@@ -34,6 +34,9 @@
 * To [dampfhamm3r](https://github.com/dampfhamm3r) he had the idea for the project and needed a lot of perseverance to work on it. 
 * To [ELLR](https://github.com/ellr/) he supported us and carried out code reviews
 * To [yogibaer75](https://github.com/yogibaer75) he answered many of our questions at the CheckMK conference.
+* To thl-cmk who took the time to do a review.
+* To [sva-mh](https://github.com/sva-mh) he contributed the first bugfixes for CheckMK 2.3.
+* To bitwiz for helping to improve the special agent.
 
 ## Plugin download
 
@@ -70,7 +73,7 @@ Go to `System` &rarr; `Administrators` &rarr; `Create New` &rarr; `REST API Admi
 1. Install the plugin via Extensions
 2. Search for FortiOS special angent and configure a rule
 3. Confirgure the rule for your needs:
-    - API Token: `TOKEN YOUR CREATED ABOVE`
+    - API Token: `TOKEN YOU CREATED ABOVE`
     - Port: 8443 is default
     - SSL certificate checking: it's recommended to trust the certificate via CheckMK and not to deactivate the checks!
     - Timeout: you may leave at default value, please increase in case of slow WAN

@@ -28,7 +28,6 @@ from cmk.gui.plugins.wato.utils import (
 )
 from cmk.gui.valuespec import Dictionary, TextInput, Transform
 
-
 def _resources_session_params():
     return Transform(
         Dictionary(

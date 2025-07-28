@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - cmk*
     paths:
       - .github/labels.yml
 
@@ -19,3 +20,5 @@ jobs:
         uses: micnncim/action-label-syncer@v1.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          manifest: .github/labels.yml

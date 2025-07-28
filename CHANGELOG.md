@@ -25,6 +25,34 @@
 
 ---
 
+
+## [1.0.4] - 2025-07-28
+
+### 🔄 Changed
+- Better error handling for special agent crontributed by `bitwiz`
+- Improved GitHub Actions
+
+---
+
+## [1.0.3] - 2025-07-21
+
+### 🐛 Fixed
+- Improved special agent for Fortigate 7.2 and 7.4 (Switch interfaces)
+- Compatibility for CMK 2.2.x
+- Wrong imports at `FortiOS devices` view
+- Fortigate:
+    - interface discovery should work even if a non-existent interface pattern is given in the exclusion list
+    - interfaces display `CRIT` state if they go down
+- FortiSwitches:
+    - interfaces display `CRIT` state if they go down
+    - added option to inventorize only active interfaces
+        - __Note:__ if a interface description matches, the interface will be added even the state is `down`
+- License check is more stable now
+
+---
+
+=======
+
 ## [1.0.0] - 2024-09-12
 
 ### 🚀 Added

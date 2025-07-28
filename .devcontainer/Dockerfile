@@ -2,6 +2,7 @@
 
 # [Choice] Ubuntu version: 2.1.0-latest, 2.2.0-latest, 2.3.0-latest
 ARG VARIANT="2.3.0-latest"
+
 FROM checkmk/check-mk-cloud:${VARIANT}
 
 ARG USERNAME=cmk

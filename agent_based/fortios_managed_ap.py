@@ -90,7 +90,7 @@ class Radio(BaseModel):
     client_count: Optional[int] = 0
     health: Optional[AccessPointHealth] = "Unknown"
 
-
+      
 class SSIDRadio(BaseModel):
     radio: int
     list: List[str]

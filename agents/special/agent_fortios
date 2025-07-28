@@ -21,8 +21,11 @@ Special agent for monitoring Fortinet Devices with FortiOS via REST API 2.x with
 
 from __future__ import annotations
 
+import datetime
 import logging
 import sys
+import traceback
+
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Optional
@@ -37,6 +40,7 @@ from cmk.special_agents.v0_unstable.agent_common  import (
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
 from requests.adapters import HTTPAdapter
 
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 _LOGGER = logging.getLogger("agent_fortios")
 
 
@@ -50,7 +54,7 @@ class _SectionSpec:
     min_version: Optional[int]
     params: Mapping[str, str] | None = None
     piggyback: bool = False
-    piggyback_section: str | None = None 
+    piggyback_section: str | None = None
 
 
 _SECTIONS = [
@@ -89,11 +93,11 @@ _SECTIONS = [
         path="monitor/system/interface?vdom=*&include_aggregate=true&include_vlan=true",
         min_version=_REST_VERSION,
     ),
-     _SectionSpec(
+    _SectionSpec(
         name="interfaces_cmdb",
         path="cmdb/system/interface",
         min_version=_REST_VERSION,
-    ),  
+    ),
     _SectionSpec(
         name="vdom_resources",
         path="monitor/system/vdom-resource?vdom=*",
@@ -140,6 +144,7 @@ _SECTIONS = [
         piggyback=True,
         piggyback_section="switch",
     ),
+    ### Hangs for longer periods sometime, produces not output
     _SectionSpec(
         name="managed_switch_health",
         path="monitor/switch-controller/managed-switch/health",
@@ -161,11 +166,6 @@ _SECTIONS = [
         name="dhcp_lease",
         path="monitor/system/dhcp",
         min_version=_REST_VERSION,
-    ),
-    _SectionSpec(
-       name="sensors",
-       path="monitor/system/sensor-info",
-       min_version=_REST_VERSION,
     ),
 ]
 
@@ -214,6 +214,7 @@ class JsonConcatenator:
     def get_store(self):
         return self.store
 
+
 class SpecialAgentError(Exception):
     pass
 
@@ -224,9 +225,11 @@ class AuthError(SpecialAgentError):
         sys.stderr.write(f"Connection error: {message}\n")
         sys.exit(2)
 
+
 class APIEndpointNotFound(SpecialAgentError):
     def __init__(self, message):
         sys.stderr.write(f"HTTP status error: {message}\n")
+
 
 class SectionError(SpecialAgentError):
     def __init__(self, message):
@@ -244,7 +247,9 @@ class HostNameValidationAdapter(HTTPAdapter):
 
 
 class _FortiOSSession:
-    def __init__(self, server: str, port: int, cert_check: bool | str, timeout: int) -> None:
+    def __init__(
+        self, server: str, port: int, cert_check: bool | str, timeout: int
+    ) -> None:
         self._session = requests.Session()
         self._base_url = f"https://{server}:{port}"
         self._port = port
@@ -271,7 +276,12 @@ class _FortiOSSession:
             timeout=self._timeout,
         )
 
-    def get(self, path: str, headers: Mapping[str, str], params: Mapping[str, str] | None = None) -> requests.Response:
+    def get(
+        self,
+        path: str,
+        headers: Mapping[str, str],
+        params: Mapping[str, str] | None = None,
+    ) -> requests.Response:
         # Watch out: we must provide the verify keyword to every individual request call!
         # Else it will be overwritten by the REQUESTS_CA_BUNDLE env variable
         return self._session.get(
@@ -284,11 +294,20 @@ class _FortiOSSession:
 
 
 class FortiOS:
-    def __init__(self, server: str, port: int, api_token: str, cert_check: bool | str, timeout: int) -> None:
+    def __init__(
+        self,
+        server: str,
+        port: int,
+        api_token: str,
+        cert_check: bool | str,
+        timeout: int,
+    ) -> None:
         self._session = _FortiOSSession(server, port, cert_check, timeout)
         self._api_token = api_token
 
-    def collect_section_data(self, spec: _SectionSpec, latest_version: str = _REST_VERSION) -> tuple[str, Mapping]:
+    def collect_section_data(
+        self, spec: _SectionSpec, latest_version: str = _REST_VERSION
+    ) -> tuple[str, Mapping]:
         try:
             section_response = self._session.get(
                 f"{latest_version}/{spec.path}",
@@ -302,14 +321,24 @@ class FortiOS:
             _LOGGER.error(f"Login failed: {e}")
             raise AuthError(f"Login failed {e}") from e
 
+        if section_response.status_code == 429:
+            _LOGGER.error(f"Collecting section: {spec.name} failed. Reason: HTTP status 429; error: ({section_response.status_code}) {section_response.reason}")
+            raise AuthError(f"IP address blacklisted or too many requests")
+
         if section_response.status_code != 200:
-            _LOGGER.error(f"Collecting section: {spec.name} failed. Reason: HTTP status not 200; error: ({section_response.status_code}) {section_response.reason}")
-            raise APIEndpointNotFound(f"Spec name: {spec.name} failed. Reason: HTTP status not 200; error: ({section_response.status_code}) {section_response.reason}")
+            _LOGGER.error(
+                f"Collecting section: {spec.name} failed. Reason: HTTP status not 200; error: ({section_response.status_code}) {section_response.reason}"
+            )
+            raise APIEndpointNotFound(
+                f"Spec name: {spec.name} failed. Reason: HTTP status not 200; error: ({section_response.status_code}) {section_response.reason}"
+            )
 
         return section_response.json()
 
 
-def _filter_applicable_sections(sections: Sequence[_SectionSpec], latest_version: str = _REST_VERSION) -> Iterator[_SectionSpec]:
+def _filter_applicable_sections(
+    sections: Sequence[_SectionSpec], latest_version: str = _REST_VERSION
+) -> Iterator[_SectionSpec]:
     for spec in sections:
         if spec.min_version > latest_version:
             _LOGGER.error(
@@ -339,7 +368,13 @@ def agent_fortios(args: Args) -> int:
         try:
             data = None
             data = fortios.collect_section_data(spec)
-        
+
+        except AuthError:
+            # no use trying any other sections, abort entire run
+            _LOGGER.error(f"Login failed while trying to collect {spec.name}: {spec.path}")
+            sys.stdout.write("\n<<<>>>\n")
+            break
+
         except Exception:
             _LOGGER.error(f"Collecting {spec.name} failed: {spec.path}")
             sys.stdout.write("\n<<<>>>\n") # Hotfix: End previous-section. SectionError appends the error output to a working section otherwise. 
@@ -352,7 +387,7 @@ def agent_fortios(args: Args) -> int:
 
         # piggybackdata handling
         if spec.piggyback and spec.piggyback_section == "switch":
-            data = fortios.collect_section_data(spec)
+            # data = fortios.collect_section_data(spec) Redundant, already collected above
             json_store.add_json(data, spec.name)
         else:
             if isinstance(data, list):
@@ -372,7 +407,10 @@ def agent_fortios(args: Args) -> int:
     switch_status_data = switch_status.get("results")
 
     switch_health = json_store.get_value("managed_switch_health")
-    switch_health_data = switch_health.get("results")
+    if switch_health:
+        switch_health_data = switch_health.get("results")
+    else:
+        switch_health_data = {}
 
     port_stats = json_store.get_value("managed_switch_port_stats")
     switch_port_stats = port_stats.get("results")
@@ -385,19 +423,49 @@ def agent_fortios(args: Args) -> int:
             _LOGGER.error(f"Switch status is not connected: {switch.get('status')}")
             continue
         switch_serial = switch.get("serial")
+        switch_id = switch.get("switch-id")
 
         # map the ports stat data to the correct switch
-        switch_port_stats_result = next((item for item in switch_port_stats if item.get("serial") == switch_serial), None)
+        switch_port_stats_result = next(
+            (item for item in switch_port_stats if item.get("serial") == switch_serial),
+            None,
+        )
+        
         # map the switch data to the correct switch
-        switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_serial), None)
-        # map the switch health data to the correct switch
-        switch_health_data_result = switch_health_data.get(switch.get("serial"))
+        if "7.2" in managed_switch["version"]:
+            switch_data_result = next(
+                (item for item in switch_data if item.get("switch-id") == switch_serial), None
+            )
+            switch_health_data_result = switch_health_data.get(switch.get("serial"))
 
-        with ConditionalPiggybackSection(switch["name"]):
-            with SectionWriter("fortios_managed_switch_interface") as writer:
-                writer.append_json({"switch_port_stats": switch_port_stats_result, "switch_ports": switch, "switch_status": switch_data_result})
-            with SectionWriter("fortios_managed_switch_health") as writer:
-                writer.append_json(switch_health_data_result)
+            with ConditionalPiggybackSection(switch["name"]):
+                with SectionWriter("fortios_managed_switch_interface") as writer:
+                    writer.append_json(
+                        {
+                            "switch_port_stats": switch_port_stats_result,
+                            "switch_ports": switch,
+                            "switch_status": switch_data_result
+                        }
+                    )
+                with SectionWriter("fortios_managed_switch_health") as writer:
+                    writer.append_json(switch_health_data_result)
+        else:
+            switch_data_result = next(
+                (item for item in switch_data if item.get("switch-id") == switch_id), None
+            )
+            switch_health_data_result = switch_health_data.get(switch.get("switch-id"))
+
+            with ConditionalPiggybackSection(switch["switch-id"]):
+                with SectionWriter("fortios_managed_switch_interface") as writer:
+                    writer.append_json(
+                        {
+                            "switch_port_stats": switch_port_stats_result,
+                            "switch_ports": switch,
+                            "switch_status": switch_data_result,
+                        }
+                    )
+                with SectionWriter("fortios_managed_switch_health") as writer:
+                    writer.append_json(switch_health_data_result)
 
     return 0
 

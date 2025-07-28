@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 
 from cmk.base.plugins.agent_based.agent_based_api.v1 import register
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 class InterfaceCMDB(BaseModel):
@@ -39,7 +39,6 @@ class InterfaceCMDB(BaseModel):
     q_origin_key: str
     type: str
 
-    @field_validator('internal', mode='before')
     @classmethod
     def stringify(cls, value) -> str:
         if value is not None:
