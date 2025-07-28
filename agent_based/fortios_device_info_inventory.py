@@ -30,10 +30,10 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import InventoryResult
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
-class ModelInfo(BaseModel,protected_namespaces = ()):
+class ModelInfo(BaseModel, protected_namespaces=()):
     hostname: str
     model_name: str
     model: str
