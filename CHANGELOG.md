@@ -25,6 +25,14 @@
 
 ---
 
+## [1.0.4] - 2025-07-28
+
+### 🔄 Changed
+- Better error handling for special agent crontributed by `bitwiz`
+- Improved GitHub Actions
+
+---
+
 ## [1.0.3] - 2025-07-21
 
 ### 🐛 Fixed
