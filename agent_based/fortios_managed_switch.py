@@ -32,7 +32,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 class Switch(BaseModel, frozen=True):
