@@ -30,7 +30,6 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     Service,
     State,
     check_levels,
-    check_levels_predictive,
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import (
@@ -48,28 +47,18 @@ def discovery_fortios_resources_sessions(section: FortiResource) -> DiscoveryRes
 
 
 def check_fortios_resources_sessions(params: Mapping[str, Any], section: FortiResource) -> CheckResult:
-
     session_levels = params.get("session_levels")
+
     yield Result(state=State.OK, summary="Sessions")
-    yield Metric("active_sessions", section.total_sessions, boundaries=(0, None), levels=session_levels)
-    
-    yield from (
-        check_levels_predictive(
-            section.total_sessions,
-            metric_name="total_sessions",
-            levels=session_levels,
-            label="Sessions",
-            boundaries=(0, None),
-        )
-        if isinstance(session_levels, dict)
-        else check_levels(
-            section.total_sessions,
-            metric_name="max_sessions",
-            levels_upper=session_levels,
-            label="Sessions",
-            boundaries=(0, None),
-        )
+    yield Metric("active_sessions", section.total_sessions, levels=session_levels)
+    yield from check_levels(
+        metric_name="total_sessions",
+        value=section.total_sessions,
+        levels_upper=session_levels,
+        label="Total",
+        boundaries=(0, None),
     )
+
     if len(section.vdoms) > 1:
         for item in section.vdoms:
             yield Metric(item.vdom, item.results.session.current_usage, boundaries=(0, 100))
