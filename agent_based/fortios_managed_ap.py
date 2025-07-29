@@ -88,7 +88,7 @@ class Radio(BaseModel):
     radio_id: int
     mode: str
     client_count: Optional[int] = 0
-    health: Optional[AccessPointHealth] = "Unknown"
+    health: Optional[AccessPointHealth] | None = None
 
       
 class SSIDRadio(BaseModel):
@@ -125,7 +125,7 @@ class AccessPoint(BaseModel):
     radio: List[Radio]
     eos: Optional[bool] = False
     wired: List[WiredInterface]
-    health: AccessPointHealth
+    health: AccessPointHealth | None = None
     cpu_usage: int
     mem_free: int
     mem_total: int
