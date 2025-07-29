@@ -39,19 +39,6 @@ class InterfaceCMDB(BaseModel):
     q_origin_key: str
     type: str
 
-    @classmethod
-    def stringify(cls, value) -> str:
-        if value is not None:
-            return str(value)
-        return value
-
-    @field_validator('internal', mode='before')
-    @classmethod
-    def stringify(cls, value) -> str:
-        if value is not None:
-            return str(value)
-        return value
-
 
 def parse_fortios_interfaces_cmdb(string_table):
     try:
