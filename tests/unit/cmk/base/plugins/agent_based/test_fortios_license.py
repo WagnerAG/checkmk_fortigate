@@ -116,6 +116,107 @@ DISCOVERY_DEFAULT_PARAMETERS = {"features": ["fortiguard", "forticare", "appctrl
 def test_parse_fortios_license(string_table, expected_section) -> None:
     assert parse_fortios_license(string_table) == expected_section
 
+@pytest.mark.parametrize(
+    "string_table, expected_section",
+    [
+        (
+
+    [
+        [
+            '{"build": 2731, "http_method": "GET", "name": "status", "path": "license", '
+            '"results": {"antivirus": {"db_status": "db_type_extended", '
+            '"engine": {"last_update": 1731540540, "version": "7.00035"}, '
+            '"entitlement": "AVDB", "expires": 1765152000, "last_update": 1738128300, '
+            '"status": "licensed", "type": "downloaded_fds_object", "version": "93.00624"}, '
+            '"appctrl": {"entitlement": "FMWR", "expires": 1765152000, '
+            '"last_update": 1448933400, "status": "licensed", "type": "downloaded_fds_object", '
+            '"version": "6.00741"}, '
+            '"web_filtering": {"category_list_version": 10, "entitlement": "FURL", '
+            '"expires": 1765152000, "running": true, "status": "licensed", '
+            '"type": "live_fortiguard_service"}, '
+            '"forticare": {"account": "test@test.com", "company": "MyCompany", "industry": "", '
+            '"registration_status": "registered", "registration_supported": true, "status": "registered", '
+            '"support": {"enhanced": {"expires": 1765152000, "status": "licensed", '
+            '"support_level": "Premium"}, "hardware": {"expires": 1765152000, "status": '
+            '"licensed", "support_level": "Advanced HW"}}, "type": "cloud_service_status"}, '
+            '"fortiguard": {"connected": true, "connection_issue": false, '
+            '"fortigate_wan_ip": "4.5.6.7", "has_connected": true, '
+            '"last_connection_success": 1753776015, "next_scheduled_update": 1753777800, '
+            '"scheduled_updates_enabled": true, "server_address": "1.2.3.4:443", '
+            '"supported": true, "type": "cloud_service_status", "update_server_usa": false}, '
+            '"vdom": {"can_upgrade": false, "max": 10, "type": "platform", "used": 1}}, '
+            '"serial": "Serial01", "status": "success", "vdom": "root", "version": "v7.4.x"}'
+        ]
+    ],
+    {
+        "fortiguard": FortiGuardModule(
+            type="cloud_service_status",
+            supported=True,
+            connected=True,
+            has_connected=True,
+            connection_issue=False,
+            last_connection_success=1753776015,
+            update_server_usa=False,
+            next_scheduled_update=1753777800,
+            scheduled_updates_enabled=True,
+            server_address="1.2.3.4:443",
+            fortigate_wan_ip="4.5.6.7",
+        ),
+        "forticare": FortiCareModule(
+            type="cloud_service_status",
+            status="registered",
+            registration_status="registered",
+            registration_supported=True,
+            account="test@test.com",
+            company="MyCompany",
+            industry="",
+            support=Support(
+                hardware=SupportDetail(status="licensed", support_level="Advanced HW", expires=1765152000),
+                enhanced=SupportDetail(status="licensed", support_level="Premium", expires=1765152000),
+            ),
+        ),
+        "antivirus": AntivirusModule(
+            type="downloaded_fds_object",
+            status="licensed",
+            version="93.00624",
+            expires=1765152000,
+            entitlement="AVDB",
+            last_update=1738128300,
+            db_status="db_type_extended",
+            engine={"version": "7.00035", "last_update": 1731540540},
+        ),
+        "appctrl": AppCtrlModule(
+            type="downloaded_fds_object",
+            status="licensed",
+            version="6.00741",
+            expires=1765152000,
+            entitlement="FMWR",
+            last_update=1448933400,
+        ),
+        "web_filtering": WebFilteringModule(
+            type="live_fortiguard_service",
+            status="licensed",
+            expires=1765152000,
+            entitlement="FURL",
+            category_list_version=10,
+            running=True,
+        ),
+        "vdom": Vdom(
+            type="platform",
+            can_upgrade=False,
+            used=1,
+            max=10,
+                ),
+            },
+        ),
+    ],
+)
+
+def test_parse_fortios_license_74(string_table, expected_section) -> None:
+    assert parse_fortios_license(string_table) == expected_section
+
+
+
 
 @freeze_time("2022-01-01 21:00:00")
 @pytest.mark.parametrize(

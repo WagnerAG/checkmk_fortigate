@@ -132,9 +132,9 @@ class AppCtrlModule(ModuleInterface):
     expires: int
     entitlement: str
     last_update: int
-    last_update_attempt: Optional[int]
-    last_update_result_status: Optional[str]
-    last_update_method_status: Optional[str]
+    last_update_attempt: Optional[int] | None = None
+    last_update_result_status: Optional[str] | None = None
+    last_update_method_status: Optional[str] | None = None
 
     def module_name(self) -> str:
         return "appctrl"
@@ -171,11 +171,11 @@ class AntivirusModule(ModuleInterface):
     expires: int
     entitlement: str
     last_update: int
-    last_update_attempt: Optional[int]
-    last_update_result_status: Optional[str]
-    last_update_method_status: Optional[str]
-    db_status: Optional[str] = None
-    engine: Optional[Dict[str, Any]] = None
+    last_update_attempt: Optional[int] | None = None
+    last_update_result_status: Optional[str] | None = None
+    last_update_method_status: Optional[str] | None = None
+    db_status: Optional[str] | None = None
+    engine: Optional[Dict[str, Any]] | None = None
 
     def module_name(self) -> str:
         return "antivirus"
