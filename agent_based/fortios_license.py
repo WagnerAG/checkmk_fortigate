@@ -90,7 +90,7 @@ class SupportDetail(BaseModel):
 
 
 class Support(BaseModel):
-    hardware: Optional[SupportDetail]
+    hardware: Optional[SupportDetail] | None = None
     enhanced: SupportDetail
 
 
