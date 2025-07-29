@@ -43,7 +43,7 @@ class ModelInfo(BaseModel, protected_namespaces=()):
 class DeviceInfo(BaseModel):
     serial: str
     version: str
-    build: str
+    build: int
     results: Optional[ModelInfo] = None
 
     @classmethod
@@ -80,11 +80,21 @@ def inventory_fortios_device_info(section: DeviceInfo) -> InventoryResult:
 
     path = ["hardware", "system"]
     for _k, v in section.items():
-        yield Attributes(path=path, inventory_attributes={"manufacturer": _MANUFACTURER, "serial": v.serial, "product": v.results.model_name, "model": v.results.model})
+        yield Attributes(
+            path=path,
+            inventory_attributes={
+                "manufacturer": _MANUFACTURER,
+                "serial": v.serial,
+                "product": v.results.model_name,
+                "model": v.results.model,
+            },
+        )
 
     path = ["software", "os"]
     for _k, v in section.items():
-        yield Attributes(path=path, inventory_attributes={"version": v.version, "build": v.build})
+        yield Attributes(
+            path=path, inventory_attributes={"version": v.version, "build": v.build}
+        )
 
 
 register.inventory_plugin(
