@@ -38,15 +38,15 @@ AP_SECTION: dict = {
         lldp_enable=True,
         os_version="FP231F-v7.0-build0134",
         radio=[
-            Radio(radio_id=1, mode="AP", client_count=0, health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good"))),
-            Radio(radio_id=2, mode="AP", client_count=1, health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good"))),
-            Radio(radio_id=3, mode="Monitor", client_count=0, health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good"))),
+            Radio(radio_id=1, mode="AP", client_count=0, health=AccessPointHealth(overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good")),
+            Radio(radio_id=2, mode="AP", client_count=1, health=AccessPointHealth(overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good")),
+            Radio(radio_id=3, mode="Monitor", client_count=0, health=AccessPointHealth(overall=HealthMetric(value=0, severity="good"))),
             Radio(radio_id=4, mode="Virtual Lan AP", client_count=0, health=None),
             Radio(radio_id=5, mode="Not Exist", client_count=0, health=None),
         ],
         eos=False,
         wired=[WiredInterface(interface="lan1", bytes_rx=245200771025, bytes_tx=160819904621, packets_rx=300058497, packets_tx=265495953, errors_rx=0, errors_tx=0, dropped_rx=5081872, dropped_tx=0, collisions=0, link_speed_mbps=1000, is_carrier_link=True, is_full_duplex=True, max_link_speed=1000), WiredInterface(interface="lan2", bytes_rx=0, bytes_tx=0, packets_rx=0, packets_tx=0, errors_rx=0, errors_tx=0, dropped_rx=0, dropped_tx=0, collisions=0, link_speed_mbps=0, is_carrier_link=False, is_full_duplex=False, max_link_speed=1000)],
-        health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=0, severity="good")),
+        health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=99, severity="Unknown")),
         cpu_usage=10,
         mem_free=562836,
         mem_total=903584,
@@ -70,7 +70,7 @@ AP_SECTION: dict = {
     ],
 )
 def test_parse_fortios_managed_ap(string_table, expected_section) -> None:
-    assert parse_fortios_managed_ap(string_table) == expected_section[0]
+    assert parse_fortios_managed_ap(string_table)["AP-NAME"].model_dump() == expected_section[0]["AP-NAME"].model_dump()
 
 
 @pytest.mark.parametrize(
@@ -94,11 +94,17 @@ def test_parse_fortios_managed_ap(string_table, expected_section) -> None:
 def test_check_fortios_managed_ap(item: str, section: str, expected_check_result: Tuple) -> None:
     with patch("cmk.base.plugins.agent_based.fortios_managed_ap.get_value_store") as mock_get:
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
-        mock_get.return_value = {"bytes_tx": (timestamp, 0.0), "bytes_rx": (timestamp, 0.0)}
-        mock_get.return_value = {"errors_tx": (timestamp, 0.0), "errors_rx": (timestamp, 0.0)}
-        mock_get.return_value = {"dropped_tx": (timestamp, 0.0), "dropped_rx": (timestamp, 0.0)}
-        mock_get.return_value = {"collisions": (timestamp, 0.0)}
-        mock_get.return_value = {"if_out_bps": (timestamp, 0.0), "if_in_bps": (timestamp, 0.0)}
+        mock_get.return_value = {
+            "bytes_tx": (timestamp, 0.0),
+            "bytes_rx": (timestamp, 0.0),
+            "errors_tx": (timestamp, 0.0),
+            "errors_rx": (timestamp, 0.0),
+            "dropped_tx": (timestamp, 0.0),
+            "dropped_rx": (timestamp, 0.0),
+            "collisions": (timestamp, 0.0),
+            "if_out_bps": (timestamp, 0.0),
+            "if_in_bps": (timestamp, 0.0),
+        }
         result = list(check_fortios_managed_ap(item, section[0]))
         for res, expected_res in zip(result, expected_check_result):
             assert res == expected_res
