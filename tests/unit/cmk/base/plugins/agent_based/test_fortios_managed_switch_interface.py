@@ -110,7 +110,7 @@ DEFAULT_PARAMETERS: Dict = {}
                         rpvst_port="disabled",
                         sample_direction="both",
                         sflow_counter_interval=0,
-                        speed="1000",
+                        speed=1000,
                         speed_mask=207,
                         stacking_port=0,
                         status="up",
@@ -222,7 +222,7 @@ DEFAULT_PARAMETERS: Dict = {}
                         rpvst_port="disabled",
                         sample_direction="both",
                         sflow_counter_interval=0,
-                        speed="10",
+                        speed=10,
                         speed_mask=207,
                         stacking_port=0,
                         status="up",
@@ -334,7 +334,7 @@ DEFAULT_PARAMETERS: Dict = {}
                         rpvst_port="disabled",
                         sample_direction="both",
                         sflow_counter_interval=0,
-                        speed="10",
+                        speed=10,
                         speed_mask=207,
                         stacking_port=0,
                         status="up",
@@ -528,8 +528,12 @@ def test_parse_fortios_managed_switch_interface(string_table, expected_section) 
         ),
     ],
 )
-def test_check_fortios_managed_switch_interface(item: str, section: str, expected_check_result: Tuple) -> None:
-    with patch("cmk.base.plugins.agent_based.fortios_managed_switch_interface.get_value_store") as mock_get:
+def test_check_fortios_managed_switch_interface(
+    item: str, section: str, expected_check_result: Tuple
+) -> None:
+    with patch(
+        "cmk.base.plugins.agent_based.fortios_managed_switch_interface.get_value_store"
+    ) as mock_get:
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"rx_bytes": (timestamp, 0), "tx_bytes": (timestamp, 0)}
         result = list(check_fortios_switch_interface(item, section))
