@@ -49,7 +49,7 @@ def test_parse_fortios_ha_history(string_table, expected_section) -> None:
                 (Section(history=[Event(time="1696696257", event="member node01 lost heartbeat on hbdev port2"), Event(time="1696691966", event="member node02 lost heartbeat on hbdev port1")])),
             ],
             [
-                (Result(state=State.OK, summary="Oct 07 2023 16:30:57: member node01 lost heartbeat on hbdev port2", details="Oct 07 2023 16:30:57: member node01 lost heartbeat on hbdev port2\nOct 07 2023 15:19:26: member node02 lost heartbeat on hbdev port1"),),
+                (Result(state=State.OK, summary="2023-10-07 16:30:57: member node01 lost heartbeat on hbdev port2", details="2023-10-07 16:30:57: member node01 lost heartbeat on hbdev port2\n2023-10-07 15:19:26: member node02 lost heartbeat on hbdev port1"),),
             ],
         ),
     ],

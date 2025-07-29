@@ -30,7 +30,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import StringTable
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, model_validator
 
 
 class Session(BaseModel):
@@ -54,20 +54,13 @@ class FortiResource(BaseModel):
     total_memory: Optional[int] = 0
     total_sessions: Optional[int] = 0
 
-    @validator("total_cpu", always=True)
-    def calculate_total_cpu(cls, v, values):
-        total_cpu = sum(vdom.results.cpu for vdom in values.get("vdoms", []))
-        return total_cpu
-
-    @validator("total_memory", always=True)
-    def calculate_total_memory(cls, v, values):
-        total_memory = sum(vdom.results.memory for vdom in values.get("vdoms", []))
-        return total_memory
-
-    @validator("total_sessions", always=True)
-    def calculate_total_sessions(cls, v, values):
-        total_sessions = sum(vdom.results.session.current_usage for vdom in values.get("vdoms", []))
-        return total_sessions
+    @model_validator(mode="after")
+    @classmethod
+    def calculate_totals(cls, model):
+        model.total_cpu = sum(vdom.results.cpu for vdom in model.vdoms)
+        model.total_memory = sum(vdom.results.memory for vdom in model.vdoms)
+        model.total_sessions = sum(vdom.results.session.current_usage for vdom in model.vdoms)
+        return model
 
 
 def parse_fortios_resources(string_table: StringTable) -> FortiResource | None:

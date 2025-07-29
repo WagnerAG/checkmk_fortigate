@@ -33,7 +33,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     render,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 NUM_OUTPUT_RECORDS = 7
 
@@ -42,7 +42,7 @@ class Event(BaseModel):
     event: str
     time: int
 
-    @validator("time")
+    @field_validator("time")
     def convert_time_field(cls, v):
         return render.datetime(v)
 

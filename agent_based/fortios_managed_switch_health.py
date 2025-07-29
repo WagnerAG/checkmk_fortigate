@@ -120,7 +120,7 @@ def parse_fortios_managed_switch_health(string_table) -> FortiosSwitchData | Non
     if (switch_health := replace_hyphens(json_data)) is None:
         return None
 
-    PerformanceStatus.update_forward_refs()
+    PerformanceStatus.model_rebuild()
     return FortiosSwitchData(**switch_health)
 
 

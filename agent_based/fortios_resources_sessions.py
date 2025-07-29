@@ -50,23 +50,22 @@ def discovery_fortios_resources_sessions(section: FortiResource) -> DiscoveryRes
 def check_fortios_resources_sessions(params: Mapping[str, Any], section: FortiResource) -> CheckResult:
 
     session_levels = params.get("session_levels")
-    levels = session_levels.get("levels")
     yield Result(state=State.OK, summary="Sessions")
-    yield Metric("active_sessions", section.total_sessions, boundaries=(0, None), levels=levels if isinstance(levels, dict) else DEFAULT_SESSION_LEVELS)
+    yield Metric("active_sessions", section.total_sessions, boundaries=(0, None), levels=session_levels)
     
     yield from (
         check_levels_predictive(
             section.total_sessions,
             metric_name="total_sessions",
-            levels=levels,
+            levels=session_levels,
             label="Sessions",
             boundaries=(0, None),
         )
-        if isinstance(levels, dict)
+        if isinstance(session_levels, dict)
         else check_levels(
             section.total_sessions,
             metric_name="max_sessions",
-            levels_upper=levels,
+            levels_upper=session_levels,
             label="Sessions",
             boundaries=(0, None),
         )

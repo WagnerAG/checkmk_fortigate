@@ -38,7 +38,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     render,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult, HostLabelGenerator
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 DISCOVERY_DEFAULT_PARAMETERS = {"features": ["fortiguard", "forticare", "appctrl", "web_filtering", "antivirus", "vdom"]}
 DEFAULT_LICENSE_EXPIRES_LEVEL: Dict = {"day_levels": (45, 30)}
@@ -205,7 +205,8 @@ class LicenseStatus(BaseModel):
     results: Dict[str, ModuleInterface]
     vdom: str
 
-    @validator("results", pre=True)
+    @field_validator("results", mode="before")
+    @classmethod
     def validate_modules(cls, v):
         validated_results = {}
         module_map = {

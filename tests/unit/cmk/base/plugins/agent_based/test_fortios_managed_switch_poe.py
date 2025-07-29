@@ -24,7 +24,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
 from cmk.base.plugins.agent_based.fortios_managed_switch_health import CPU, POE, FortiosSwitchData, Memory, PerformanceStatus, TimeUnit, Uptime
 from cmk.base.plugins.agent_based.fortios_managed_switch_poe import check_fortios_switch_poe
 
-PerformanceStatus.update_forward_refs()
+PerformanceStatus.model_rebuild()
 
 
 @pytest.mark.parametrize(

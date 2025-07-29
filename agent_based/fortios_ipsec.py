@@ -39,7 +39,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.render import networkbandwidth
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, model_validator
 
 
 class Proxy(BaseModel):
@@ -79,23 +79,26 @@ class FortiIPSec(BaseModel):
     tunnels_down: int = 0
     tunnels_total: int = 0
 
-    @validator("tunnels_up", always=True)
-    def count_tunnels_up(cls, v, values):
-        if "proxyid" in values:
-            return sum(1 for proxy in values["proxyid"] if proxy.status == "up")
-        return v
+    @model_validator(mode="after")
+    @classmethod
+    def count_tunnels_up(cls, model):
+        if model.proxyid:
+            model.tunnels_up = sum(1 for proxy in model.proxyid if proxy.status == "up")
+        return model
 
-    @validator("tunnels_down", always=True)
-    def count_tunnels_down(cls, v, values):
-        if "proxyid" in values:
-            return sum(1 for proxy in values["proxyid"] if proxy.status == "down")
-        return v
+    @model_validator(mode="after")
+    @classmethod
+    def count_tunnels_down(cls, model):
+        if model.proxyid:
+            model.tunnels_down = sum(1 for proxy in model.proxyid if proxy.status == "down")
+        return model
 
-    @validator("tunnels_total", always=True)
-    def count_tunnels_total(cls, v, values):
-        if "proxyid" in values:
-            return len(values["proxyid"])
-        return v
+    @model_validator(mode="after")
+    @classmethod
+    def count_tunnels(cls, model):
+        model.tunnels_up = sum(1 for proxy in model.proxyid if proxy.status == "up")
+        model.tunnels_total = len(model.proxyid)
+        return model
 
     @property
     def summary(self) -> str:

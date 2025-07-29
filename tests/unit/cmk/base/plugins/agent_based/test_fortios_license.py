@@ -140,7 +140,7 @@ def test_parse_fortios_license(string_table, expected_section) -> None:
                 ),
             },
             (
-                Result(state=State.OK, summary="License module AVDB, Status: licensed, Version: 91.08942, Last update: Nov 19 2023 15:56:45, Expires in: 2 years 284 days"),
+                Result(state=State.OK, summary="License module AVDB, Status: licensed, Version: 91.08942, Last update: 2023-11-19 15:56:45, Expires in: 2 years 284 days"),
                 Result(state=State.OK, summary="Antivirus license expires in number of days: 1014 days"),
                 Metric("antivirus_license", 1014.0),
                 Metric("last_update", 686.0),

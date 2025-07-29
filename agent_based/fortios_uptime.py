@@ -35,7 +35,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     render,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class Uptime(BaseModel):
@@ -45,16 +45,19 @@ class Uptime(BaseModel):
     uptime: Optional[int] = 0
 
     # convert ms to s
-    @validator("utc_last_reboot", "snapshot_utc_time", always=True)
+    @field_validator("utc_last_reboot", "snapshot_utc_time", mode="before")
+    @classmethod
     def convert_time(cls, v):
-        return v / 1000
+        return v / 1000 if v is not None else None
 
-    @validator("uptime", always=True)
-    def calculate_uptime(cls, v, values):
-        if "utc_last_reboot" in values:
-            utc_last_reboot = values["utc_last_reboot"]
-            uptime_seconds = int(time.mktime(time.gmtime()) - time.mktime(time.gmtime(utc_last_reboot)))
-            return uptime_seconds
+    @model_validator(mode="after")
+    @classmethod
+    def calculate_uptime(cls, model):
+        if model.utc_last_reboot is not None:
+            now = time.time()
+            reboot = model.utc_last_reboot
+            model.uptime = int(now - reboot)
+        return model
 
     @property
     def summary(self):

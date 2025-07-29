@@ -39,7 +39,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.render import networkbandwidth
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class Subsession(BaseModel):
@@ -73,29 +73,22 @@ class SSLVPNData(BaseModel):
     if_in_bps: int = Field(0, alias="if_in_bps")
     if_out_bps: int = Field(0, alias="if_out_bps")
 
-    @validator("total_users", always=True)
-    def get_total_users(cls, v, values):
-        return len(values.get("results", []))
+    @model_validator(mode="after")
+    @classmethod
+    def compute_aggregates(cls, model):
+        results = model.results
 
-    @validator("connected_users", always=True)
-    def get_connected_user_names(cls, v, values):
-        user_names = [result.user_name for result in values.get("results", [])]
-        return ", ".join(user_names)
+        model.total_users = len(results)
+        model.connected_users = ", ".join(result.user_name for result in results)
+        model.total_tunnels = sum(len(result.subsessions) for result in results)
+        model.if_in_bps = sum(
+            subsession.in_bytes for result in results for subsession in result.subsessions
+        )
+        model.if_out_bps = sum(
+            subsession.out_bytes for result in results for subsession in result.subsessions
+        )
 
-    @validator("total_tunnels", always=True)
-    def calculate_tunnels(cls, v, values):
-        total_subsessions = sum(len(result.subsessions) for result in values.get("results", []))
-        return total_subsessions
-
-    @validator("if_in_bps", always=True)
-    def calculate_total_in_bps(cls, v, values):
-        total_in = sum(subsession.in_bytes for result in values.get("results", []) for subsession in result.subsessions)
-        return total_in
-
-    @validator("if_out_bps", always=True)
-    def calculate_total_out_bps(cls, v, values):
-        total_out = sum(subsession.out_bytes for result in values.get("results", []) for subsession in result.subsessions)
-        return total_out
+        return model
 
     @property
     def summary(self):

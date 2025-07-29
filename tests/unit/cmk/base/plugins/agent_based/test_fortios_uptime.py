@@ -51,7 +51,7 @@ def test_parse_fortios_uptime(string_table, expected_section) -> None:
         (
             Uptime(hostname="ffw01", utc_last_reboot=1687436424000, snapshot_utc_time=1712050417000),
             [
-                Result(state=State.OK, summary="Up since: Jun 22 2023 12:20:24 UTC, Uptime: 1 year 14 days"),
+                Result(state=State.OK, summary="Up since: 2023-06-22 12:20:24 UTC, Uptime: 1 year 14 days"),
                 Metric("uptime", int(time.mktime(time.gmtime()) - time.mktime(time.gmtime(1687436424)))),
             ],
         ),

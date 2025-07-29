@@ -33,7 +33,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 DEFAULT_OFFSET_LEVELS: Dict = {"offset_levels": (4, 0.2, 0.5)}
 
@@ -47,7 +47,8 @@ class FortiNTP(BaseModel, frozen=True):
     selected: Optional[bool] = None
 
     # convert ms to s
-    @validator("offset", always=True)
+    @field_validator("offset", mode="after")
+    @classmethod
     def convert_offset(cls, v):
         return v / 1000
 

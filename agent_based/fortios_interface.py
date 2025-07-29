@@ -44,7 +44,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1.render import (
     nicspeed,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel, RootModel, validator
+from pydantic import BaseModel, RootModel, field_validator, model_validator
 
 
 class Interface(BaseModel):
@@ -74,26 +74,33 @@ class Interface(BaseModel):
     interface_type: Optional[str] = None
 
     # convert bytes to bps
-    @validator("if_out_bps", always=True)
-    def calculate_if_out_bps(cls, v, values):
-        tx_bytes = values.get("tx_bytes")
-        return tx_bytes * 8 if tx_bytes is not None else v
+    @model_validator(mode="after")
+    @classmethod
+    def calculate_derived_fields(cls, model):
+        if model.tx_bytes is not None:
+            model.if_out_bps = model.tx_bytes * 8
+        return model
 
-    @validator("if_in_bps", always=True)
-    def calculate_if_in_bps(cls, v, values):
-        rx_bytes = values.get("rx_bytes")
-        return rx_bytes * 8 if rx_bytes is not None else v
+    @model_validator(mode="after")
+    @classmethod
+    def calculate_if_in_bps(cls, model):
+        if model.rx_bytes is not None:
+            model.if_in_bps = model.rx_bytes * 8
+        return model
 
-    @validator("if_in_errors", always=True)
-    def map_if_in_errors(cls, v, values):
-        return values.get("rx_errors", 0)
+    @field_validator("if_in_errors", mode="before")
+    @classmethod
+    def map_if_in_errors(cls, value):
+        return value
 
-    @validator("if_out_errors", always=True)
-    def map_if_in_discards(cls, v, values):
-        return values.get("tx_errors", 0)
+    @field_validator("if_out_errors", mode="before")
+    @classmethod
+    def map_if_in_discards(cls, value):
+        return value
 
     # convert speed from (bps) to (Bps)
-    @validator("speed", always=True)
+    @field_validator("speed", mode="before")
+    @classmethod
     def calculate_speed(cls, value):
         return value * 125000
 
@@ -107,10 +114,15 @@ class VdomData(BaseModel):
     vdom: str
     results: Dict[str, Interface]
 
-    @validator("results", pre=True)
-    def add_vdom_to_interfaces(cls, v, values):
+    @field_validator("results", mode="before", check_fields=False)
+    @classmethod
+    def add_vdom_to_interfaces(cls, v, info):
+        vdom = info.data.get("vdom")
+        if vdom is None:
+            return v  # or Optional: raise ValueError("vdom is required")
+
         for interface in v.values():
-            interface["vdom"] = values["vdom"]
+            interface["vdom"] = vdom
         return v
 
 
