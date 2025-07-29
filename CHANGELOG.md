@@ -6,7 +6,21 @@
 
 ---
 
-## [Unreleased]
+## [1.2.0] - 2025-07-29
+
+### 🚀 Added
+- Boilerplate for newer CheckMK versions
+- Special agent contribution from Checkmk Forum https://forum.checkmk.com/t/fortigate-special-agent/47573/19 user 'bitwiz' many thanks!
+- Merged all changes from CheckMK 2.2 FortiOS release `1.0.3`
+
+### 🔄 Changed
+- Removed temporary predictive session monitoring
+- Migrated all Pydantic models to Pydantic V2
+
+### 🐛 Fixed
+- Various small improvements
+- Improved and fixed Pytests for new pydantic models and CheckMK 2.3
+- From https://github.com/sva-mh/checkmk_fortigate/tree/23_fixes GitHub Repo to improve the compatibility and stability many thanks!
 
 ## [1.1.0] - 2024-11-11
 
