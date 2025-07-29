@@ -30,19 +30,24 @@ from cmk.base.plugins.agent_based.fortios_uptime import (
     parse_fortios_uptime,
 )
 from freezegun import freeze_time
+from unittest.mock import patch
 
 
-@pytest.mark.parametrize(
-    "string_table, expected_section",
-    [
-        (
-            [['{"http_method":"GET", "results": {"snapshot_utc_time":1712050417000, "utc_last_reboot":1687436424000, "time_zone_offset":-120}, "serial":"Serial01", "hostname": "ffw01"}']],
-            Uptime(utc_last_reboot=1687436424000, snapshot_utc_time=1712050417000),
-        ),
-    ],
-)
-def test_parse_fortios_uptime(string_table, expected_section) -> None:
-    assert parse_fortios_uptime(string_table) == expected_section
+@patch("cmk.base.plugins.agent_based.fortios_uptime.time.time", return_value=1720183649)
+def test_parse_fortios_uptime(mock_time) -> None:
+    string_table = [[
+        '{"http_method":"GET", "results": {'
+        '"snapshot_utc_time":1712050417000, '
+        '"utc_last_reboot":1687436424000, '
+        '"time_zone_offset":-120}, '
+        '"serial":"Serial01", "hostname": "ffw01"}'
+    ]]
+
+    parsed = parse_fortios_uptime(string_table)
+
+    assert parsed.utc_last_reboot == 1687436424
+    assert parsed.snapshot_utc_time == 1712050417
+    assert parsed.uptime == 1720183649 - 1687436424  # = 66352525
 
 @freeze_time("2024-07-05 15:27:29")
 @pytest.mark.parametrize(
@@ -52,7 +57,7 @@ def test_parse_fortios_uptime(string_table, expected_section) -> None:
             Uptime(hostname="ffw01", utc_last_reboot=1687436424000, snapshot_utc_time=1712050417000),
             [
                 Result(state=State.OK, summary="Up since: 2023-06-22 12:20:24 UTC, Uptime: 1 year 14 days"),
-                Metric("uptime", int(time.mktime(time.gmtime()) - time.mktime(time.gmtime(1687436424)))),
+                Metric("uptime", int(time.time() - 1687436424)),
             ],
         ),
     ],
