@@ -16,13 +16,10 @@
 # Developer: opensource@wagner.ch
 
 import pytest
-from cmk.base.plugins.agent_based.agent_based_api.v1 import Result, State
 from cmk.base.plugins.agent_based.fortios_device_info_inventory import (
     ModelInfo,
     DeviceInfo,
     parse_fortios_device_info,
-    inventory_fortios_device_info,
-    _MANUFACTURER,
 )
 
 
