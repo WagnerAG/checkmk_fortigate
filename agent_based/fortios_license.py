@@ -75,12 +75,12 @@ class FortiGuardModule(ModuleInterface):
 
     @property
     def summary(self):
-        # CheckMK 2.2 does not support negative timespans
-        next_update = self.next_scheduled_update
-        if next_update < 0:
-            next_update = 0
-        next_scheduled_update = render.timespan(next_update - time.time())
-        
+        ts = self.next_scheduled_update - time.time()
+        if ts < 0:
+            next_scheduled_update = "overdue" # Prevent crashes with testdata and negative timespan
+        else:
+            next_scheduled_update = render.timespan(ts)
+
         return f'Supported: {self.supported} WAN IP: {self.fortigate_wan_ip}, Scheduled Update: {self.scheduled_updates_enabled}, Next update: {next_scheduled_update}'
 
 class SupportDetail(BaseModel):
@@ -149,7 +149,7 @@ class AppCtrlModule(ModuleInterface):
 class WebFilteringModule(ModuleInterface):
     type: str = "live_fortiguard_service"
     status: str
-    expires: Optional[int]
+    expires: Optional[int] = None # Optional, as it is not present if license is not active
     entitlement: str
     category_list_version: int
     running: bool
@@ -228,7 +228,7 @@ def parse_fortios_license(string_table) -> Mapping[str, str] | None:
         json_data = json.loads(string_table[0][0])        
     except ValueError:
         json_data = {} # Just defers the crash to line 226       
-  
+
     license_modules = LicenseStatus(**json_data)
 
     return {key: item for key, item in license_modules.results.items()}
@@ -296,7 +296,9 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
         else:
             yield Result(
                 state=State.OK,
-                summary=(f"Status: {license.status}, Entitlement: {license.entitlement}, Running: {license.running}"),
+
+                summary=(f"Status: {license.status}, Entitlement: {license.entitlement}, "
+                         f"Running: {license.running}"),
             )
         if license.expires is not None and str(license.expires).isdigit():
             yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels)

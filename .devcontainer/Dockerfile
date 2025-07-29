@@ -1,6 +1,7 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/ubuntu/.devcontainer/base.Dockerfile
 
 ARG VARIANT
+
 FROM checkmk/check-mk-cloud:${VARIANT}
 
 RUN /docker-entrypoint.sh /bin/true

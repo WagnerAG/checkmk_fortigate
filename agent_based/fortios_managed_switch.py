@@ -32,7 +32,7 @@ from cmk.base.plugins.agent_based.agent_based_api.v1 import (
     register,
 )
 from cmk.base.plugins.agent_based.agent_based_api.v1.type_defs import CheckResult, DiscoveryResult
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class Switch(BaseModel, frozen=True):
@@ -51,12 +51,6 @@ class Switch(BaseModel, frozen=True):
     mc_lag_supported: bool
     led_blink_supported: bool
     os_version: str
-
-    @classmethod
-    def stringify(cls, value) -> str:
-        if value is not None:
-            return str(value)
-        return value
 
     @property
     def summary(self) -> str:
