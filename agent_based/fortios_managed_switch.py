@@ -44,7 +44,7 @@ class Switch(BaseModel, frozen=True):
     connecting_from: Optional[str]
     join_time: str
     type: str
-    is_l3: str
+    is_l3: bool
     max_poe_budget: int
     igmp_snooping_supported: bool
     dhcp_snooping_supported: bool
