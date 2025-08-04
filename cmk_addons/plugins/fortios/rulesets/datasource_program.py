@@ -25,7 +25,6 @@ from cmk.rulesets.v1.form_specs import (
     FixedValue,
     Integer,
     Password,
-    String,
     migrate_to_password,
     validators,
 )
@@ -36,12 +35,6 @@ def _valuespec_special_agents_fortios() -> Dictionary:
     return Dictionary(
         title=Title("FortiOS"),
         elements={
-            "ipaddress": DictElement(
-                parameter_form=String(
-                    title=Title("IP Address"),
-                ),
-                required=True,
-            ),
             "port": DictElement(
                 parameter_form=Integer(
                     title=Title("TCP port number"),
