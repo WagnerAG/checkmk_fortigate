@@ -171,7 +171,6 @@ _SECTIONS = [
 
 def parse_arguments(argv: Sequence[str] | None) -> Args:
     parser = create_default_argument_parser(description=__doc__)
-    group = parser.add_mutually_exclusive_group()
     parser.add_argument("--timeout", type=int, default=10)
     parser.add_argument("--port", type=int, default=8443)
     parser.add_argument(
@@ -183,10 +182,11 @@ def parse_arguments(argv: Sequence[str] | None) -> Args:
         "--cert-server-name",
         help="""Expect this as the servers name in the ssl certificate. Overrides '--no-cert-check'.""",
     )
+    group = parser.add_mutually_exclusive_group()
     group.add_argument(
+        "-s",
         "--api-token",
-        type=str,
-        required=True,
+        default=None,
         help=("Password for Fortios Login. Preferred over --token-id"),
     )
     group.add_argument(
@@ -349,12 +349,12 @@ def _filter_applicable_sections(sections: Sequence[_SectionSpec], latest_version
 
 def agent_fortios(args: Args) -> int:
     if args.api_token_id:
-        pw_id, pw_path = args.token_id.split(":")
+        pw_id, pw_path = args.api_token_id.split(":")
     else:
         pw_id = None
         pw_path = None
-        api_token = ((args.api_token if args.api_token is not None else password_store.lookup(Path(pw_path), pw_id)),)
-
+    api_token = ((args.api_token if args.api_token is not None else password_store.lookup(Path(pw_path), pw_id)),)
+    logging.debug(f"Using API token: {api_token}")
     fortios = FortiOS(
         args.server,
         args.port,
