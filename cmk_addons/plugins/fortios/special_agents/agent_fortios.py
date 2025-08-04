@@ -348,17 +348,10 @@ def _filter_applicable_sections(sections: Sequence[_SectionSpec], latest_version
 
 
 def agent_fortios(args: Args) -> int:
-    if args.api_token_id:
-        pw_id, pw_path = args.api_token_id.split(":")
-    else:
-        pw_id = None
-        pw_path = None
-    api_token = ((args.api_token if args.api_token is not None else password_store.lookup(Path(pw_path), pw_id)),)
-    logging.debug(f"Using API token: {api_token}")
     fortios = FortiOS(
         args.server,
         args.port,
-        api_token,
+        args.api_token,
         args.cert_server_name or not args.no_cert_check,
         args.timeout,
     )

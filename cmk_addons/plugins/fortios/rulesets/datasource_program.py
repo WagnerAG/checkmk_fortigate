@@ -48,7 +48,7 @@ def _valuespec_special_agents_fortios() -> Dictionary:
                 parameter_form=Password(
                     title=Title("API Token"),
                     custom_validate=(validators.LengthInRange(min_value=1),),
-                    migrate=migrate_to_password,
+                    migrate=migrate_to_password(),
                 ),
                 required=True,
             ),
