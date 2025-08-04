@@ -25,7 +25,6 @@ import logging
 import sys
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
 
 import requests
@@ -36,7 +35,6 @@ from cmk.special_agents.v0_unstable.agent_common import (
     special_agent_main,
 )
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
-from cmk.utils import password_store
 from requests.adapters import HTTPAdapter
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
