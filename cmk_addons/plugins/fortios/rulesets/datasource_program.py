@@ -24,7 +24,9 @@ from cmk.rulesets.v1.form_specs import (
     Dictionary,
     FixedValue,
     Integer,
+    Password,
     String,
+    migrate_to_password,
     validators,
 )
 from cmk.rulesets.v1.rule_specs import SpecialAgent, Topic
@@ -50,9 +52,10 @@ def _valuespec_special_agents_fortios() -> Dictionary:
                 required=True,
             ),
             "token": DictElement(
-                parameter_form=String(
+                parameter_form=Password(
                     title=Title("API Token"),
                     custom_validate=(validators.LengthInRange(min_value=1),),
+                    migrate=migrate_to_password,
                 ),
                 required=True,
             ),

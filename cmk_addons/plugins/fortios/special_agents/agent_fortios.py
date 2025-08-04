@@ -25,18 +25,19 @@ import logging
 import sys
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import requests
 import urllib3
-from requests.adapters import HTTPAdapter
-
 from cmk.special_agents.v0_unstable.agent_common import (
     ConditionalPiggybackSection,
     SectionWriter,
     special_agent_main,
 )
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
+from cmk.utils import password_store
+from requests.adapters import HTTPAdapter
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 _LOGGER = logging.getLogger("agent_fortios")
@@ -170,6 +171,7 @@ _SECTIONS = [
 
 def parse_arguments(argv: Sequence[str] | None) -> Args:
     parser = create_default_argument_parser(description=__doc__)
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument("--timeout", type=int, default=10)
     parser.add_argument("--port", type=int, default=8443)
     parser.add_argument(
@@ -181,11 +183,16 @@ def parse_arguments(argv: Sequence[str] | None) -> Args:
         "--cert-server-name",
         help="""Expect this as the servers name in the ssl certificate. Overrides '--no-cert-check'.""",
     )
-    parser.add_argument(
+    group.add_argument(
         "--api-token",
         type=str,
         required=True,
-        help=("Generate the API token through the CLI"),
+        help=("Password for Fortios Login. Preferred over --token-id"),
+    )
+    group.add_argument(
+        "--api-token-id",
+        default=None,
+        help="""Password store reference to the password for Fortios login""",
     )
     parser.add_argument("server", type=str, help="Hostname or IP address")
     return parser.parse_args(argv)
@@ -341,10 +348,17 @@ def _filter_applicable_sections(sections: Sequence[_SectionSpec], latest_version
 
 
 def agent_fortios(args: Args) -> int:
+    if args.api_token_id:
+        pw_id, pw_path = args.token_id.split(":")
+    else:
+        pw_id = None
+        pw_path = None
+        api_token = ((args.api_token if args.api_token is not None else password_store.lookup(Path(pw_path), pw_id)),)
+
     fortios = FortiOS(
         args.server,
         args.port,
-        args.api_token,
+        api_token,
         args.cert_server_name or not args.no_cert_check,
         args.timeout,
     )

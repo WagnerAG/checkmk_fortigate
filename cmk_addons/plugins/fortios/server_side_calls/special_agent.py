@@ -22,19 +22,19 @@ Special agent for monitoring Fortinet Devices with FortiOS via REST API 2.x with
 from collections.abc import Iterator
 from typing import Any
 
-from pydantic import BaseModel
-
 from cmk.server_side_calls.v1 import (
     HostConfig,
+    Secret,
     SpecialAgentCommand,
     SpecialAgentConfig,
 )
+from pydantic import BaseModel
 
 
 class Params(BaseModel):
     """params validator"""
 
-    token: str | None = None
+    token: Secret | None = None
     port: int | None = None
     ssl: Any | None = None
     retries: int | None = None
