@@ -8,12 +8,15 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-release:
     name: Build Release Package
     runs-on: ubuntu-latest
     container:
-      image: checkmk/check-mk-raw:2.3.0-latest
+      image: checkmk/check-mk-raw:2.4.0-latest
 
     env:
       OMD_ROOT: /omd/sites/cmk
@@ -24,6 +27,19 @@ jobs:
     steps:
       - name: Initialize Checkmk Site
         run: /docker-entrypoint.sh /bin/true
+
+      - name: Install GitHub CLI (gh)
+        run: |
+          apt-get update
+          apt-get install -y curl ca-certificates gnupg
+          mkdir -p -m 0755 /etc/apt/keyrings
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+          chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+          apt-get update
+          apt-get install -y gh
 
       - uses: actions/checkout@v4
       - name: Setup links
@@ -37,6 +53,7 @@ jobs:
         id: cmkpkg
 
       - name: Create Release
+        if: ${{ github.event.inputs.create_release }}
         id: create_release
         uses: elgohr/Github-Release-Action@v5
         env:
@@ -45,11 +62,15 @@ jobs:
           tag: ${{ github.ref }}
           title: Release ${{ github.ref }}
 
-      - name: Upload Release Asset
+      - name: Create or Update Release (and upload asset)
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           files: |
             ./${{ steps.cmkpkg.outputs.pkgfile }}
