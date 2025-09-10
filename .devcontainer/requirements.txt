@@ -2,5 +2,5 @@ ruff
 pytest
 pytest-cov
 requests-mock
-urllib3<2.1
+urllib3>=2.5.0
 freezegun
