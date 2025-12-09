@@ -117,9 +117,10 @@ See CONTRIBUTING.md
 
 ## Special Agent Call
 
-To call the special agent manually, please use this command.
+To call the special agent manually, please use this command:
+First, create a password named <forti_api_token> in the password store
 ```
- /opt/omd/sites/cmk/bin/python3 agent_fortios.py --api-token <TOKEN> --port 8443 --no-cert-check <HOST_IP>
+ /opt/omd/sites/$USER/bin/python3 local/lib/python3/cmk_addons/plugins/fortios/special_agents/agent_fortios.py --api-token <forti_api_token>:var/check_mk/stored_passwords --port 8443 --no-cert-check <HOST_IP>
 ```
 
 ## Directories
