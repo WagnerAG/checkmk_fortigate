@@ -28,7 +28,7 @@ exclude = [
     "venv",
 ]
 
-line-length = 550
+line-length = 320
 indent-width = 4
 
 [lint]
