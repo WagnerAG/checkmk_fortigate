@@ -109,7 +109,7 @@ To monitor switch ports, the following should be noted:
  - If no `FortiOS switch interface discovery` rule is configured, all interfaces will be discovered regardless of their state
  - When a rule is configured, a pattern can be specified; all switch ports whose description contains this pattern will be monitored.
  - Or, conversely, you can exclude interfaces from discovery if their description contains a specific string
- - You may choose to discover only active interfaces
+ - You may choose to discover only interfaces with a switch port description
 
 
 # Development
