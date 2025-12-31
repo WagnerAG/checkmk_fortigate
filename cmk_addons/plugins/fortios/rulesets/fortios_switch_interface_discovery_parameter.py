@@ -38,6 +38,13 @@ def _form_check_fortios_switch_interface_discovery() -> Dictionary:
                     editable_order=False,
                 ),
             ),
+            "item_with_matching_description": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Only discover interfaces with a description matching the include list"),
+                    help_text=Help("If enabled, only interfaces with a description matching the include list will be discovered."),
+                    label=Label("Enable"),
+                ),
+            ),
             "item_excluded": DictElement(
                 parameter_form=List[str](
                     title=Title("Exclude switch ports with these descriptions from monitoring"),
