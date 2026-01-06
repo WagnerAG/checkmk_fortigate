@@ -5,6 +5,20 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
+## [2.0.1] - 2025-12-30
+### 🔄 Changed
+- License Check
+  - Treat `no_license` antivirus state as `OK` during inventory
+- Readme updated
+
+### 🚀 Added
+- Switch port discovery
+ - add option to inventorize only interfaces with a matching description
+
+### 🐛 Fixed
+- WiFi AP Check
+  - fix crash if WiFi AP has no IP address
+
 ## [2.0.0] - 2025-08-25
 This marks the first release with official support for CheckMK 2.4.x.
 ### 🔄 Changed

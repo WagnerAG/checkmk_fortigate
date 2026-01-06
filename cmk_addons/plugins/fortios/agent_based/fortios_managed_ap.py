@@ -103,7 +103,7 @@ class AccessPoint(BaseModel):
     status: str
     state: str
     clients: int
-    local_ipv4_addr: str
+    local_ipv4_addr: Optional[str] = "Unknown"
     board_mac: str
     last_reboot_time: Optional[str] = "Unknown"
     ssid: List[SSIDRadio]
