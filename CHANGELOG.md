@@ -18,6 +18,7 @@
 ### 🐛 Fixed
 - WiFi AP Check
   - fix crash if WiFi AP has no IP address
+- Added dedicated rule for memory check (issue [#17](https://github.com/WagnerAG/checkmk_fortigate/issues/17))
 
 ## [2.0.0] - 2025-08-25
 This marks the first release with official support for CheckMK 2.4.x.

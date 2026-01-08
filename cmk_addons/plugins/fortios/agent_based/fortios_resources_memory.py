@@ -61,7 +61,7 @@ check_plugin_fortios_resources_memory = CheckPlugin(
     service_name="Memory usage",
     sections=["fortios_vdom_resources"],
     discovery_function=discovery_fortios_resources_memory,
-    check_ruleset_name="memory",
+    check_ruleset_name="fortios_resources_memory",
     check_function=check_fortios_resources_memory,
     check_default_parameters=DEFAULT_MEMORY_LEVELS,
 )
