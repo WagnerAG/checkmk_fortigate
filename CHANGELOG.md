@@ -5,7 +5,7 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
-## [2.0.1] - 2025-12-30
+## [2.0.1] - 2026-01-08
 ### 🔄 Changed
 - License Check
   - Treat `no_license` antivirus state as `OK` during inventory
