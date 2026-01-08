@@ -128,7 +128,7 @@ First, create a password named <forti_api_token> in the CheckMK password store. 
 
 To call the special agent manually, please use this command:
 ```
- /opt/omd/sites/$USER/bin/python3 local/lib/python3/cmk_addons/plugins/fortios/special_agents/agent_fortios.py --api-token <forti_api_token_id>:var/check_mk/stored_passwords --port 8443 --no-cert-check <HOST_IP>
+/opt/omd/sites/$USER/bin/python3 local/lib/python3/cmk_addons/plugins/fortios/special_agents/agent_fortios.py --api-token <forti_api_token_id>:var/check_mk/stored_passwords --port 8443 --no-cert-check <HOST_IP>
 ```
 
 
