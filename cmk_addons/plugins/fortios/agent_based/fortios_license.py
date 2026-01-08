@@ -29,9 +29,31 @@ from typing import Any, Dict, Mapping, Optional
 
 from pydantic import BaseModel, field_validator
 
-from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, HostLabelGenerator, HostLabel, Metric, Result, Service, State, render, check_levels
+from cmk.agent_based.v2 import (
+    AgentSection,
+    CheckPlugin,
+    CheckResult,
+    DiscoveryResult,
+    HostLabelGenerator,
+    HostLabel,
+    Metric,
+    Result,
+    Service,
+    State,
+    render,
+    check_levels,
+)
 
-DISCOVERY_DEFAULT_PARAMETERS = {"features": ["fortiguard", "forticare", "appctrl", "web_filtering", "antivirus", "vdom"]}
+DISCOVERY_DEFAULT_PARAMETERS = {
+    "features": [
+        "fortiguard",
+        "forticare",
+        "appctrl",
+        "web_filtering",
+        "antivirus",
+        "vdom",
+    ]
+}
 DEFAULT_LICENSE_EXPIRES_LEVEL: Dict = {"day_levels": ("fixed", (45, 30))}
 
 
@@ -121,7 +143,7 @@ class AppCtrlModule(ModuleInterface):
     type: str = "downloaded_fds_object"
     status: str
     version: str
-    expires: int
+    expires: Optional[int] | None = None
     entitlement: str
     last_update: int
     last_update_attempt: Optional[int] | None = None
@@ -134,14 +156,14 @@ class AppCtrlModule(ModuleInterface):
     @property
     def summary(self):
         expires = render.timespan(self.expires - time.time())
-        return f"Module {self.entitlement} Version: {self.version}, Status: {self.status}, Expires: {expires}"
+        return f"Module {self.entitlement} Version: {self.version}, Status: {self.status}, Expires in: {expires}"
 
 
 # Web filtering module
 class WebFilteringModule(ModuleInterface):
     type: str = "live_fortiguard_service"
     status: str
-    expires: Optional[int] = None  # Optional, as it is not present if license is not active
+    expires: Optional[int] | None = None
     entitlement: str
     category_list_version: int
     running: bool
@@ -152,7 +174,7 @@ class WebFilteringModule(ModuleInterface):
     @property
     def summary(self):
         expires = render.timespan(self.expires - time.time())
-        return f"Module {self.entitlement} running: {self.running}, Status: {self.status}, Expires: {expires}"
+        return f"Module {self.entitlement} running: {self.running}, Status: {self.status}, Expires in: {expires}"
 
 
 # Antivirus module
@@ -160,7 +182,7 @@ class AntivirusModule(ModuleInterface):
     type: str = "downloaded_fds_object"
     status: str
     version: str
-    expires: int
+    expires: Optional[int] | None = None
     entitlement: str
     last_update: int
     last_update_attempt: Optional[int] | None = None
@@ -266,9 +288,18 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
                 levels_lower=day_levels,
                 render_func=lambda v: f"{v:.0f} days",
             )
-
-        yield Metric("last_update", convert_number_of_days(license.last_update))
-        yield Metric("expires", convert_number_of_days(license.expires), levels=day_levels[1])
+        else:
+            yield Result(
+                state=State.OK,
+                summary=(f"Status: {license.status}, Entitlement: {license.entitlement}"),
+            )
+        if license.expires is not None and str(license.expires).isdigit():
+            yield Metric(
+                "expires",
+                convert_number_of_days(license.expires),
+                levels=day_levels[1],
+            )
+            yield Metric("last_update", convert_number_of_days(license.last_update))
 
     elif item == "web_filtering":
         if license.status == "licensed":
@@ -329,7 +360,11 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
                 levels_lower=day_levels,
                 render_func=lambda v: f"{v:.0f} days",
             )
-        yield Metric("expires", convert_number_of_days(license.support.enhanced.expires), levels=day_levels[1])
+        yield Metric(
+            "expires",
+            convert_number_of_days(license.support.enhanced.expires),
+            levels=day_levels[1],
+        )
 
     elif item == "fortiguard":
         if license.connected is True:
@@ -343,7 +378,11 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
                 summary=license.summary,
             )
 
-        yield Metric("expires", convert_number_of_days(license.next_scheduled_update), levels=day_levels[1])
+        yield Metric(
+            "expires",
+            convert_number_of_days(license.next_scheduled_update),
+            levels=day_levels[1],
+        )
 
 
 agent_section_fortios_license = AgentSection(
