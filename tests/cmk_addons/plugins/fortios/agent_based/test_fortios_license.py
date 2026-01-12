@@ -36,6 +36,7 @@ from cmk_addons.plugins.fortios.agent_based.fortios_license import (
 
 DEFAULT_LICENSE_EXPIRES_LEVEL: Dict = {"day_levels": ("fixed", (45, 30))}
 
+
 @pytest.mark.parametrize(
     "string_table, expected_section",
     [
@@ -145,6 +146,7 @@ DEFAULT_LICENSE_EXPIRES_LEVEL: Dict = {"day_levels": ("fixed", (45, 30))}
 )
 def test_parse_fortios_license_40f(string_table, expected_section) -> None:
     assert parse_fortios_license(string_table) == expected_section
+
 
 @pytest.mark.parametrize(
     "string_table, expected_section",
@@ -466,8 +468,8 @@ def test_parse_fortios_license_expired_modules(string_table, expected_section) -
                 Result(state=State.OK, summary="License module AVDB, Status: licensed, Version: 91.08942, Last update: 2023-11-19 15:56:45, Expires in: 2 years 284 days"),
                 Result(state=State.OK, summary="Antivirus license expires in number of days: 1014 days"),
                 Metric("antivirus_license", 1014.0),
-                Metric("last_update", 686.0),
                 Metric("expires", 1014.0, levels=(45, 30)),
+                Metric("last_update", 686.0),
             ),
         ),
     ],
@@ -593,7 +595,7 @@ def test_check_fortios_license_vdom(params: dict, section: dict, expected_check_
                 ),
             },
             (
-                Result(state=State.OK, summary="Module FURL running: True, Status: licensed, Expires: 2 years 284 days"),
+                Result(state=State.OK, summary="Module FURL running: True, Status: licensed, Expires in: 2 years 284 days"),
                 Result(state=State.OK, summary="Webfilter license expires in number of days: 1014 days"),
                 Metric("webfilter_license", 1014.0),
                 Metric("expires", 1014.0, levels=(45, 30)),
@@ -628,7 +630,7 @@ def test_check_fortios_license_webfilter(params: dict, section: dict, expected_c
                 ),
             },
             (
-                Result(state=State.OK, summary="Module FMWR Version: 26.00679, Status: licensed, Expires: 2 years 284 days"),
+                Result(state=State.OK, summary="Module FMWR Version: 26.00679, Status: licensed, Expires in: 2 years 284 days"),
                 Result(state=State.OK, summary="Appcrtl license expires in number of days: 1014 days"),
                 Metric("appctrl_license", 1014.0),
                 Metric("expires", 1014.0, levels=(45, 30)),
