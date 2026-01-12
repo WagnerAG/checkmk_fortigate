@@ -103,5 +103,5 @@ def test_check_fortios_sslvpn(item: str, section: Mapping[str, SSLVPNData], expe
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"if_in_bps": (timestamp, 0.0), "if_out_bps": (timestamp, 0.0)}
         result = list(check_fortios_sslvpn(item, section))
-        for res, expected_res in zip(result, expected_check_result):
+        for res, expected_res in zip(result, expected_check_result, strict=False):
             assert res == expected_res

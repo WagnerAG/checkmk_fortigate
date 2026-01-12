@@ -38,8 +38,35 @@ from cmk_addons.plugins.fortios.agent_based.fortios_interface_cmdb import Interf
     "string_table, expected_section",
     [
         (
-            [['[{"http_method":"GET","revision":"1697974233.46042","results":{"aggData01.3001":{"id":"aggData01.3001","name":"aggData01.3001","alias":"","mac":"00:00:00:00:00:00","ip":"10.10.30.30","mask":29,"link":true,"speed":6250000000.0,"duplex":1,"tx_packets":1827,"rx_packets":8921050,"tx_bytes":89580,"rx_bytes":825968722,"tx_errors":0,"rx_errors":0,"vlanid":3001,"interface":"aggData01"}},"vdom":"VDOM00","path":"system","name":"interface","action":"","status":"success","serial":"Serial01","version":"v7.0.12","build":6681}]']],
-            {"aggData01.3001": Interface(id="aggData01.3001", name="aggData01.3001", alias="", mac="00:00:00:00:00:00", ip="10.10.30.30", mask=29, link=True, speed=6250000000.0, duplex=1, tx_packets=1827, rx_packets=8921050, tx_bytes=89580, if_out_bps=0, rx_bytes=825968722, if_in_bps=6607749776, tx_errors=0, rx_errors=0, vlanid=3001, interface="aggData01", vdom="VDOM00")},
+            [
+                [
+                    '[{"http_method":"GET","revision":"1697974233.46042","results":{"aggData01.3001":{"id":"aggData01.3001","name":"aggData01.3001","alias":"","mac":"00:00:00:00:00:00","ip":"10.10.30.30","mask":29,"link":true,"speed":6250000000.0,"duplex":1,"tx_packets":1827,"rx_packets":8921050,"tx_bytes":89580,"rx_bytes":825968722,"tx_errors":0,"rx_errors":0,"vlanid":3001,"interface":"aggData01"}},"vdom":"VDOM00","path":"system","name":"interface","action":"","status":"success","serial":"Serial01","version":"v7.0.12","build":6681}]'
+                ]
+            ],
+            {
+                "aggData01.3001": Interface(
+                    id="aggData01.3001",
+                    name="aggData01.3001",
+                    alias="",
+                    mac="00:00:00:00:00:00",
+                    ip="10.10.30.30",
+                    mask=29,
+                    link=True,
+                    speed=6250000000.0,
+                    duplex=1,
+                    tx_packets=1827,
+                    rx_packets=8921050,
+                    tx_bytes=89580,
+                    if_out_bps=0,
+                    rx_bytes=825968722,
+                    if_in_bps=6607749776,
+                    tx_errors=0,
+                    rx_errors=0,
+                    vlanid=3001,
+                    interface="aggData01",
+                    vdom="VDOM00",
+                )
+            },
         ),
     ],
 )
@@ -53,7 +80,30 @@ def test_parse_fortios_interfaces(string_table, expected_section) -> None:
         (
             "aggData01.3001",
             {
-                "aggData01.3001": Interface(id="aggData01.3001", name="aggData01.3001", alias="", mac="00:00:00:00:00:00", ip="10.10.30.30", mask=29, link=True, speed=6250000000.0, duplex=1, tx_packets=1827, rx_packets=8921050, tx_bytes=89580, if_out_bps=716640, rx_bytes=825968722, if_in_bps=6607749776, tx_errors=0, rx_errors=0, vlanid=3001, interface="aggData01", description="Agg", interface_type="Vlan", vdom="VDOM00"),
+                "aggData01.3001": Interface(
+                    id="aggData01.3001",
+                    name="aggData01.3001",
+                    alias="",
+                    mac="00:00:00:00:00:00",
+                    ip="10.10.30.30",
+                    mask=29,
+                    link=True,
+                    speed=6250000000.0,
+                    duplex=1,
+                    tx_packets=1827,
+                    rx_packets=8921050,
+                    tx_bytes=89580,
+                    if_out_bps=716640,
+                    rx_bytes=825968722,
+                    if_in_bps=6607749776,
+                    tx_errors=0,
+                    rx_errors=0,
+                    vlanid=3001,
+                    interface="aggData01",
+                    description="Agg",
+                    interface_type="Vlan",
+                    vdom="VDOM00",
+                ),
             },
             {
                 "Interface 1": InterfaceCMDB(
@@ -126,5 +176,5 @@ def test_check_fortios_interfaces(item: str, section_fortios_interfaces, section
         mock_get.return_value = {"if_in_bps": (timestamp, 0.0), "if_out_bps": (timestamp, 0.0)}
         mock_get.return_value = {"rx_errors": (timestamp, 0.0), "tx_errors": (timestamp, 0.0)}
         result = list(check_fortios_interfaces(item, section_fortios_interfaces, section_fortios_interfaces_cmdb))
-        for res, expected_res in zip(result, expected_check_result):
+        for res, expected_res in zip(result, expected_check_result, strict=False):
             assert res == expected_res

@@ -46,7 +46,20 @@ AP_SECTION: dict = {
         board_mac="00:00:00:00:00:00",
         last_reboot_time="04/04/23 15:28",
         ssid=[SSIDRadio(radio=1, list=["Business", "Guest", "IoT"]), SSIDRadio(radio=2, list=["Business", "Guest", "IoT"])],
-        lldp=[LLDP(local_port="lan1", chassis_id="mac 00:00:00:00:00:00", system_name="switch01", system_description="FortiSwitch-448E-FPOE v7.2.x,build0000,000000 (GA)", capability="Bridge Router ", port_id="port48", port_description="port48", mau_operating_mode="1000BaseTFD - Four-pair Category 5 UTP, full duplex mode", ip="10.128.1.1", vlan=-1)],
+        lldp=[
+            LLDP(
+                local_port="lan1",
+                chassis_id="mac 00:00:00:00:00:00",
+                system_name="switch01",
+                system_description="FortiSwitch-448E-FPOE v7.2.x,build0000,000000 (GA)",
+                capability="Bridge Router ",
+                port_id="port48",
+                port_description="port48",
+                mau_operating_mode="1000BaseTFD - Four-pair Category 5 UTP, full duplex mode",
+                ip="10.128.1.1",
+                vlan=-1,
+            )
+        ],
         lldp_enable=True,
         os_version="FP231F-v7.0-build0134",
         radio=[
@@ -57,7 +70,10 @@ AP_SECTION: dict = {
             Radio(radio_id=5, mode="Not Exist", client_count=0, health=None),
         ],
         eos=False,
-        wired=[WiredInterface(interface="lan1", bytes_rx=245200771025, bytes_tx=160819904621, packets_rx=300058497, packets_tx=265495953, errors_rx=0, errors_tx=0, dropped_rx=5081872, dropped_tx=0, collisions=0, link_speed_mbps=1000, is_carrier_link=True, is_full_duplex=True, max_link_speed=1000), WiredInterface(interface="lan2", bytes_rx=0, bytes_tx=0, packets_rx=0, packets_tx=0, errors_rx=0, errors_tx=0, dropped_rx=0, dropped_tx=0, collisions=0, link_speed_mbps=0, is_carrier_link=False, is_full_duplex=False, max_link_speed=1000)],
+        wired=[
+            WiredInterface(interface="lan1", bytes_rx=245200771025, bytes_tx=160819904621, packets_rx=300058497, packets_tx=265495953, errors_rx=0, errors_tx=0, dropped_rx=5081872, dropped_tx=0, collisions=0, link_speed_mbps=1000, is_carrier_link=True, is_full_duplex=True, max_link_speed=1000),
+            WiredInterface(interface="lan2", bytes_rx=0, bytes_tx=0, packets_rx=0, packets_tx=0, errors_rx=0, errors_tx=0, dropped_rx=0, dropped_tx=0, collisions=0, link_speed_mbps=0, is_carrier_link=False, is_full_duplex=False, max_link_speed=1000),
+        ],
         health=AccessPointHealth(general=GeneralHealth(country_code=HealthMetric(value=0, severity="good"), uplink_status=[HealthMetric(value=1000, severity="good"), HealthMetric(value=0, severity="good")], overall=HealthMetric(value=0, severity="good")), overall=HealthMetric(value=99, severity="Unknown")),
         cpu_usage=10,
         mem_free=562836,
@@ -118,5 +134,5 @@ def test_check_fortios_managed_ap(item: str, section: str, expected_check_result
             "if_in_bps": (timestamp, 0.0),
         }
         result = list(check_fortios_managed_ap(item, section[0]))
-        for res, expected_res in zip(result, expected_check_result):
+        for res, expected_res in zip(result, expected_check_result, strict=False):
             assert res == expected_res

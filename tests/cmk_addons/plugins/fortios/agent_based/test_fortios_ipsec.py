@@ -99,7 +99,11 @@ DEFAULT_PARAMS: Dict = {
             IPSEC_SECTION,
             DEFAULT_PARAMS,
             [
-                Result(state=State.CRIT, summary="Type: automatic", details="Tunnels up: [P2_TEST: ['172.16.0.0-172.16.0.63']], \n\n                Tunnels down: [P2_TEST: ['0.0.0.0/0.0.0.0']], \n\n                Tunnels ignored by name: [], \n\n                Tunnels ignored by destination subnet: [], \n\n                "),
+                Result(
+                    state=State.CRIT,
+                    summary="Type: automatic",
+                    details="Tunnels up: [P2_TEST: ['172.16.0.0-172.16.0.63']], \n\n                Tunnels down: [P2_TEST: ['0.0.0.0/0.0.0.0']], \n\n                Tunnels ignored by name: [], \n\n                Tunnels ignored by destination subnet: [], \n\n                ",
+                ),
                 Result(state=State.OK, summary="Total: 2.00"),
                 Metric("ipsec_total", 2.0),
                 Metric("total_tunnels", 2),
@@ -114,5 +118,5 @@ def test_check_fortios_ipsec(item: str, section: str, params: dict, expected_che
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"if_in_bps": (timestamp, 0.0), "if_out_bps": (timestamp, 0.0)}
         check_results = list(check_fortios_ipsec(item, params, section))
-        for result, expected in zip(check_results, expected_check_result):
+        for result, expected in zip(check_results, expected_check_result, strict=False):
             assert result == expected
