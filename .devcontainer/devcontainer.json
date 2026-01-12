@@ -45,8 +45,8 @@
 			"type": "bind"
 		},
 		{
-			"source": "${localWorkspaceFolder}/plugins_legacy",
-			"target": "/opt/omd/sites/cmk/local/share/check_mk",
+			"source": "/run/host-services/ssh-auth.sock",
+			"target": "/run/host-services/ssh-auth.sock",
 			"type": "bind"
 		}
 	],
@@ -61,6 +61,7 @@
 		"OMD_ROOT": "/omd/sites/cmk",
 		"OMD_SITE": "cmk",
 		"CMK_SITE_ID": "cmk",
-		"WORKSPACE": "${containerWorkspaceFolder}"
+		"WORKSPACE": "${containerWorkspaceFolder}",
+		"SSH_AUTH_SOCK": "/run/host-services/ssh-auth.sock"
 	}
 }
