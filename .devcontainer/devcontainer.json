@@ -45,8 +45,8 @@
 			"type": "bind"
 		},
 		{
-			"source": "/run/host-services/ssh-auth.sock",
-			"target": "/run/host-services/ssh-auth.sock",
+			"source": "${localEnv:HOME}/.gnupg",
+			"target": "/home/cmk/.gnupg",
 			"type": "bind"
 		}
 	],
@@ -62,6 +62,6 @@
 		"OMD_SITE": "cmk",
 		"CMK_SITE_ID": "cmk",
 		"WORKSPACE": "${containerWorkspaceFolder}",
-		"SSH_AUTH_SOCK": "/run/host-services/ssh-auth.sock"
+        "GPG_TTY": "/dev/pts/0"
 	}
 }
