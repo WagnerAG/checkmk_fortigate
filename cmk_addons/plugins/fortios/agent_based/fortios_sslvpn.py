@@ -59,7 +59,7 @@ class SSLVPNData(BaseModel):
     vdom: str
 
     total_users: int = Field(0, alias="total_users")
-    total_tunnels: int = Field(0, alias="total_users")
+    total_tunnels: int = Field(0, alias="total_tunnels")
     connected_users: str = Field("", alias="connected_users")
     if_in_bps: int = Field(0, alias="if_in_bps")
     if_out_bps: int = Field(0, alias="if_out_bps")
