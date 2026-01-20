@@ -28,8 +28,11 @@ from cmk.agent_based.v2 import (
 )
 from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import (
     FortiIPSec,
-    check_fortios_ipsec,
     parse_fortios_ipsec,
+)
+
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel import (
+    check_fortios_ipsec,
 )
 
 IPSEC_SECTION: dict = {
@@ -114,7 +117,7 @@ DEFAULT_PARAMS: Dict = {
     ],
 )
 def test_check_fortios_ipsec(item: str, section: str, params: dict, expected_check_result: Tuple) -> None:
-    with patch("cmk_addons.plugins.fortios.agent_based.fortios_ipsec.get_value_store") as mock_get:
+    with patch("cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel.get_value_store") as mock_get:
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"if_in_bps": (timestamp, 0.0), "if_out_bps": (timestamp, 0.0)}
         check_results = list(check_fortios_ipsec(item, params, section))

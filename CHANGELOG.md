@@ -17,6 +17,8 @@
 ### 🚀 Added
 - Switch port discovery
  - add option to inventorize only interfaces with a matching description
+- New `IPSec Client VPN <name>` check. If found, it's state will always be `OK` and display the connected users
+ - can be disabled &rarr; create discovery rule `FortiOS IPSec Client VPN discovery`
 
 ### 🐛 Fixed
 - WiFi AP Check
