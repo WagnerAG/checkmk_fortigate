@@ -72,7 +72,7 @@ def check_fortios_ipsec_client_vpn(
     if not parent_vpns:
         yield Result(
             state=State.OK,
-            summary="Users: 0, Tunnels: 0",
+            summary="Users: 0",
         )
         return
 

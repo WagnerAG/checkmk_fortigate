@@ -147,7 +147,7 @@ def test_discovery_fortios_ipsec_client_vpn(
             [
                 Result(
                     state=State.OK,
-                    summary="Users: 0, Tunnels: 0",
+                    summary="Users: 0",
                 ),
             ],
         ),
@@ -163,7 +163,7 @@ def test_discovery_fortios_ipsec_client_vpn(
             [
                 Result(
                     state=State.OK,
-                    summary="Users: 0, Tunnels: 0",
+                    summary="Users: 0",
                 ),
             ],
         ),
