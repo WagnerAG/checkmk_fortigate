@@ -17,7 +17,7 @@
 ### 🚀 Added
 - Switch port discovery
  - add option to inventorize only interfaces with a matching description
-- New `IPSec Client VPN <name>` check. If found, it's state will always be `OK` and display the connected users
+- New `IPSec Client VPN <name>` check. The service is inventoried only when users are connected. Its state is always reported as `OK` and displays the currently connected users.
  - can be disabled &rarr; create discovery rule `FortiOS IPSec Client VPN discovery`
 
 ### 🐛 Fixed
