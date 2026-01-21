@@ -82,7 +82,7 @@ def check_fortios_ipsec_client_vpn(
 
     summary = f"Users: {total_users}"
 
-    details_lines = [f"User: {tunnel.xauth_user or 'unknown'}, Public IP: {tunnel.rgwy or 'unknown'}, Local IP: {tunnel.tun_id or 'unknown'})" for tunnel in parent_vpns]
+    details_lines = [f"User: {tunnel.xauth_user or 'unknown'}, Public IP: {tunnel.rgwy or 'unknown'}, Local IP: {tunnel.tun_id or 'unknown'}" for tunnel in parent_vpns]
     details = "\n".join(details_lines)
 
     yield Result(

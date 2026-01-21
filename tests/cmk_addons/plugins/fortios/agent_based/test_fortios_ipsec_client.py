@@ -137,7 +137,7 @@ def test_discovery_fortios_ipsec_client_vpn(
                 Result(
                     state=State.OK,
                     summary="Users: 2",
-                    details="User: user01, Public IP: 1.2.3.4, Local IP: 10.20.30.10)\nUser: user02, Public IP: 5.6.7.8, Local IP: 10.20.30.11)",
+                    details="User: user01, Public IP: 1.2.3.4, Local IP: 10.20.30.10\nUser: user02, Public IP: 5.6.7.8, Local IP: 10.20.30.11",
                 ),
             ],
         ),
