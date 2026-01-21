@@ -43,11 +43,6 @@
 			"source": "${localWorkspaceFolder}/cmk_addons",
 			"target": "/opt/omd/sites/cmk/local/lib/python3/cmk_addons",
 			"type": "bind"
-		},
-		{
-			"source": "${localEnv:HOME}/.gnupg",
-			"target": "/home/cmk/.gnupg",
-			"type": "bind"
 		}
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
@@ -61,7 +56,6 @@
 		"OMD_ROOT": "/omd/sites/cmk",
 		"OMD_SITE": "cmk",
 		"CMK_SITE_ID": "cmk",
-		"WORKSPACE": "${containerWorkspaceFolder}",
-        "GPG_TTY": "/dev/pts/0"
+		"WORKSPACE": "${containerWorkspaceFolder}"
 	}
 }
