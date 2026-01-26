@@ -19,8 +19,7 @@
 				"ms-azuretools.vscode-docker",
 				"ms-python.vscode-pylance",
 				"ms-python.isort",
-				"charliermarsh.ruff",
-				"GitHub.copilot"
+				"charliermarsh.ruff"
 			],
 			// Bash as default shell.
 			"settings": {
