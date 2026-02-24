@@ -35,10 +35,10 @@ body:
       description: |
         What CheckMK edition are you running this check as?
       options:
-        - "Enterprise"
-        - "Raw"
         - "Cloud"
+        - "Enterprise"
         - "MSP"
+        - "Raw"
 
   - type: dropdown
     id: checkmk-version

@@ -8,7 +8,10 @@
             "name": "Python: Aktuelle Datei",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "python3",
+            "args": [
+                "${file}"
+            ],
             "console": "integratedTerminal"
         },
         {
@@ -17,10 +20,10 @@
             "request": "launch",
             "program": "~/bin/cmk",
             "args": [
-            "-vv",
-            "--debug",
-            "-n",
-            "${input:envHOST}"
+                "-vv",
+                "--debug",
+                "-n",
+                "${input:envHOST}"
             ],
             "console": "integratedTerminal",
         },
@@ -30,10 +33,10 @@
             "request": "launch",
             "program": "~/bin/cmk",
             "args": [
-            "-vv",
-            "--debug",
-            "-I",
-            "${input:envHOST}"
+                "-vv",
+                "--debug",
+                "-I",
+                "${input:envHOST}"
             ],
             "console": "integratedTerminal",
         },
@@ -43,10 +46,10 @@
             "request": "launch",
             "program": "~/bin/cmk",
             "args": [
-            "-vv",
-            "--debug",
-            "-II",
-            "${input:envHOST}"
+                "-vv",
+                "--debug",
+                "-II",
+                "${input:envHOST}"
             ],
             "console": "integratedTerminal",
         },
@@ -56,24 +59,53 @@
             "request": "launch",
             "program": "~/bin/cmk",
             "args": [
-            "-vv",
-            "--debug",
-            "-A",
-            "-f",
-            "${input:envHOST}"
+                "-vv",
+                "--debug",
+                "-A",
+                "-f",
+                "${input:envHOST}"
+            ],
+            "console": "integratedTerminal",
+        },
+        // my new Check-Debug-Config
+        {
+            "name": "cmk - robot",
+            "type": "python",
+            "request": "launch",
+            "program": "python",
+            "args": [
+                "/omd/sites/cmk/bin/cmk",
+                "-vvv",
+                "--debug",
+                "-n",
+                "--checks=usp_ses",
+                "localhost"
+            ],
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "cmk - pytest",
+            "type": "python",
+            "request": "launch",
+            "program": "/omd/sites/cmk/bin/python3",
+            "args": [
+                "-m",
+                "pytest",
+                "--cov",
+                "agent_based"
             ],
             "console": "integratedTerminal",
         }
     ],
     "inputs": [
         {
-          "id": "envHOST",
-          "type": "command",
-          "command": "extension.commandvariable.file.content",
-          "args": {
-            "fileName": "${workspaceFolder}/.env",
-            "key": "CHECKHOST"
-          }
+            "id": "envHOST",
+            "type": "command",
+            "command": "extension.commandvariable.file.content",
+            "args": {
+                "fileName": "${workspaceFolder}/.env",
+                "key": "CHECKHOST"
+            }
         }
     ]
 }

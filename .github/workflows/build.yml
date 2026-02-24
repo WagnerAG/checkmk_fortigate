@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: checkmk/check-mk-raw:2.4.0-latest
-
     env:
       OMD_ROOT: /omd/sites/cmk
       OMD_SITE: cmk
@@ -33,7 +32,6 @@ jobs:
         
       - name: Update GITHUB_PATH
         run: echo "/omd/sites/cmk/bin" >> $GITHUB_PATH
-
 
       - name: Build Extension
         run: .devcontainer/build.sh

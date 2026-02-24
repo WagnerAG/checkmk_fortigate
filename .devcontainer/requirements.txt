@@ -1,6 +1,9 @@
 ruff
 pytest
 pytest-cov
+pytest-emoji
+pytest-md
 requests-mock
 urllib3>=2.5.0
+mypy
 freezegun
