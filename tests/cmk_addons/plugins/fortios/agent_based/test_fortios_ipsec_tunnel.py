@@ -28,45 +28,50 @@ from cmk.agent_based.v2 import (
 )
 from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import (
     FortiIPSec,
+    FortiIPSecVDOM,
     parse_fortios_ipsec,
 )
+
 
 from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel import (
     check_fortios_ipsec,
 )
 
+
 IPSEC_SECTION: dict = {
-    "P1_TEST": FortiIPSec(
-        name="P1_TEST",
-        proxyid=[
-            {
-                "proxy_src": [{"subnet": "10.10.10.0-10.10.10.255", "port": 0, "protocol": 0, "protocol_name": ""}],
-                "proxy_dst": [{"subnet": "172.16.0.0-172.16.0.63", "port": 0, "protocol": 0, "protocol_name": ""}],
-                "status": "up",
-                "p2name": "P2_TEST",
-                "p2serial": 5,
-                "expire": 3105,
-                "incoming_bytes": 1847216,
-                "outgoing_bytes": 14422894,
-            },
-            {
-                "proxy_src": [{"subnet": "0.0.0.0/0.0.0.0", "port": 0, "protocol": 0, "protocol_name": ""}],
-                "proxy_dst": [{"subnet": "0.0.0.0/0.0.0.0", "port": 0, "protocol": 0, "protocol_name": ""}],
-                "status": "down",
-                "p2name": "P2_TEST",
-                "p2serial": 1,
-            },
-        ],
-        comments="",
-        connection_count=638,
-        creation_time=8975812,
-        type="automatic",
-        incoming_bytes=4888573499940,
-        outgoing_bytes=308984509918,
-        rgwy="10.20.30.10",
-        tun_id="10.20.30.10",
-        tun_id6="::10.20.30.10",
-        wizard_type="custom",
+    "VDOM01 P1_TEST": FortiIPSecVDOM(
+        vdom="VDOM01",
+        ipsec=FortiIPSec(
+            name="P1_TEST",
+            proxyid=[
+                {
+                    "proxy_src": [{"subnet": "10.10.10.0-10.10.10.255", "port": 0, "protocol": 0, "protocol_name": ""}],
+                    "proxy_dst": [{"subnet": "172.16.0.0-172.16.0.63", "port": 0, "protocol": 0, "protocol_name": ""}],
+                    "status": "up",
+                    "p2name": "P2_TEST",
+                    "p2serial": 5,
+                    "expire": 3105,
+                    "incoming_bytes": 1847216,
+                    "outgoing_bytes": 14422894,
+                },
+                {
+                    "proxy_src": [{"subnet": "0.0.0.0/0.0.0.0", "port": 0, "protocol": 0, "protocol_name": ""}],
+                    "proxy_dst": [{"subnet": "0.0.0.0/0.0.0.0", "port": 0, "protocol": 0, "protocol_name": ""}],
+                    "status": "down",
+                    "p2name": "P2_TEST",
+                    "p2serial": 1,
+                },
+            ],
+            comments="",
+            connection_count=638,
+            creation_time=8975812,
+            type="automatic",
+            incoming_bytes=4888573499940,
+            outgoing_bytes=308984509918,
+            rgwy="10.20.30.10",
+            tun_id="10.20.30.10",
+            tun_id6="::10.20.30.10",
+        ),
     )
 }
 
@@ -85,7 +90,11 @@ IPSEC_SECTION: dict = {
     ],
 )
 def test_parse_fortios_ipsec(string_table, expected_section) -> None:
-    assert parse_fortios_ipsec(string_table) == expected_section
+    parsed = parse_fortios_ipsec(string_table)
+    assert set(parsed.keys()) == set(expected_section.keys())
+    for key in expected_section:
+        assert parsed[key].vdom == expected_section[key].vdom
+        assert parsed[key].ipsec == expected_section[key].ipsec
 
 
 DEFAULT_PARAMS: Dict = {
@@ -98,7 +107,7 @@ DEFAULT_PARAMS: Dict = {
     "item, section, params, expected_check_result",
     [
         (
-            "P1_TEST",
+            "VDOM01 P1_TEST",
             IPSEC_SECTION,
             DEFAULT_PARAMS,
             [
@@ -114,9 +123,20 @@ DEFAULT_PARAMS: Dict = {
                 Metric("ipsec_up", 1.0),
             ],
         ),
+        (
+            "VDOM01 P1_MISSING",
+            IPSEC_SECTION,
+            DEFAULT_PARAMS,
+            [
+                Result(
+                    state=State.UNKNOWN,
+                    summary="Tunnel VDOM01 P1_MISSING is missing",
+                ),
+            ],
+        ),
     ],
 )
-def test_check_fortios_ipsec(item: str, section: str, params: dict, expected_check_result: Tuple) -> None:
+def test_check_fortios_ipsec(item: str, section: dict, params: dict, expected_check_result: Tuple) -> None:
     with patch("cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel.get_value_store") as mock_get:
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"if_in_bps": (timestamp, 0.0), "if_out_bps": (timestamp, 0.0)}
