@@ -97,7 +97,7 @@ class DhcpServer(BaseModel):
     timezone: str
     tftp_server: List[str]
     filename: str
-    options: List[str]
+    options: List[dict]
     server_type: str
     ip_mode: str
     conflicted_ip_timeout: int
