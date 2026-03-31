@@ -42,12 +42,10 @@ def discover_fortios_identity(section):
     # Model
     model_name = None
     model = None
-    hostname = None
     try:
         if getattr(info, "results", None) is not None:
             model_name = getattr(info.results, "model_name", None)
             model = getattr(info.results, "model", None)
-            hostname = getattr(info.results, "hostname", None)
     except Exception:
         pass
 
