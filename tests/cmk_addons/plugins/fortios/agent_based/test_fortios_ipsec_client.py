@@ -22,7 +22,10 @@ from unittest.mock import patch
 import pytest
 
 from cmk.agent_based.v2 import Result, Service, State
-from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import FortiIPSec
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import (
+    FortiIPSec,
+    FortiIPSecVDOM,
+)
 from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_client import (
     discovery_fortios_ipsec_client_vpn,
     check_fortios_ipsec_client_vpn,
@@ -61,42 +64,56 @@ def _create_minimal_fortios_ipsec(
     )
 
 
-IPSEC_CLIENT_SECTION: Dict[str, FortiIPSec] = {
-    "client_user1": _create_minimal_fortios_ipsec(
-        name="client_user1",
-        fct_uid="fct123",
-        parent="FGT-ClientVPN",
-        xauth_user="user01",
-        rgwy="1.2.3.4",
-        tun_id="10.20.30.10",
-        tunnels_total=2,
-        tunnels_up=2,
-        tunnels_down=0,
-        incoming_bytes=1000000,
-        outgoing_bytes=500000,
+def _wrap(vdom: str, ipsec: FortiIPSec) -> FortiIPSecVDOM:
+    return FortiIPSecVDOM(vdom=vdom, ipsec=ipsec)
+
+
+IPSEC_CLIENT_SECTION: Dict[str, FortiIPSecVDOM] = {
+    "VDOM01 client_user1": _wrap(
+        "VDOM01",
+        _create_minimal_fortios_ipsec(
+            name="client_user1",
+            fct_uid="fct123",
+            parent="FGT-ClientVPN",
+            xauth_user="user01",
+            rgwy="1.2.3.4",
+            tun_id="10.20.30.10",
+            tunnels_total=2,
+            tunnels_up=2,
+            tunnels_down=0,
+            incoming_bytes=1000000,
+            outgoing_bytes=500000,
+        ),
     ),
-    "client_user2": _create_minimal_fortios_ipsec(
-        name="client_user2",
-        fct_uid="fct456",
-        parent="FGT-ClientVPN",
-        xauth_user="user02",
-        rgwy="5.6.7.8",
-        tun_id="10.20.30.11",
-        tunnels_total=1,
-        tunnels_up=0,
-        tunnels_down=1,
-        incoming_bytes=200000,
-        outgoing_bytes=300000,
+    "VDOM01 client_user2": _wrap(
+        "VDOM01",
+        _create_minimal_fortios_ipsec(
+            name="client_user2",
+            fct_uid="fct456",
+            parent="FGT-ClientVPN",
+            xauth_user="user02",
+            rgwy="5.6.7.8",
+            tun_id="10.20.30.11",
+            tunnels_total=1,
+            tunnels_up=0,
+            tunnels_down=1,
+            incoming_bytes=200000,
+            outgoing_bytes=300000,
+        ),
     ),
-    "other_tunnel": _create_minimal_fortios_ipsec(
-        name="other_tunnel",
-        fct_uid=None,
-        parent=None,
-        xauth_user=None,
-        rgwy=None,
-        tun_id=None,
+    "VDOM01 other_tunnel": _wrap(
+        "VDOM01",
+        _create_minimal_fortios_ipsec(
+            name="other_tunnel",
+            fct_uid=None,
+            parent=None,
+            xauth_user=None,
+            rgwy=None,
+            tun_id=None,
+        ),
     ),
 }
+
 
 DISCOVERY_PARAMS_ENABLED = {"item_enabled": False}
 DISCOVERY_PARAMS_DISABLED = {"item_enabled": True}
@@ -109,7 +126,7 @@ DISCOVERY_PARAMS_DISABLED = {"item_enabled": True}
             DISCOVERY_PARAMS_ENABLED,
             IPSEC_CLIENT_SECTION,
             [
-                Service(item="FGT-ClientVPN"),
+                Service(item="VDOM01 FGT-ClientVPN"),
             ],
         ),
         (
@@ -121,7 +138,7 @@ DISCOVERY_PARAMS_DISABLED = {"item_enabled": True}
 )
 def test_discovery_fortios_ipsec_client_vpn(
     params: dict,
-    section: Dict[str, FortiIPSec],
+    section: Dict[str, FortiIPSecVDOM],
     expected_services: list[Service],
 ) -> None:
     assert list(discovery_fortios_ipsec_client_vpn(params, section)) == expected_services
@@ -131,7 +148,7 @@ def test_discovery_fortios_ipsec_client_vpn(
     "item, section, expected_results",
     [
         (
-            "FGT-ClientVPN",
+            "VDOM01 FGT-ClientVPN",
             IPSEC_CLIENT_SECTION,
             [
                 Result(
@@ -142,7 +159,7 @@ def test_discovery_fortios_ipsec_client_vpn(
             ],
         ),
         (
-            "nonexistent_parent",
+            "VDOM01 nonexistent_parent",
             IPSEC_CLIENT_SECTION,
             [
                 Result(
@@ -152,12 +169,15 @@ def test_discovery_fortios_ipsec_client_vpn(
             ],
         ),
         (
-            "FGT-ClientVPN",
+            "VDOM01 FGT-ClientVPN",
             {
-                "empty": _create_minimal_fortios_ipsec(
-                    name="empty",
-                    fct_uid=None,
-                    parent=None,
+                "VDOM01 empty": _wrap(
+                    "VDOM01",
+                    _create_minimal_fortios_ipsec(
+                        name="empty",
+                        fct_uid=None,
+                        parent=None,
+                    ),
                 )
             },
             [
@@ -171,7 +191,7 @@ def test_discovery_fortios_ipsec_client_vpn(
 )
 def test_check_fortios_ipsec_client_vpn(
     item: str,
-    section: Dict[str, FortiIPSec],
+    section: Dict[str, FortiIPSecVDOM],
     expected_results: list[Result],
 ) -> None:
     with patch("cmk_addons.plugins.fortios.agent_based.fortios_ipsec_client.get_value_store") as mock_vs:
