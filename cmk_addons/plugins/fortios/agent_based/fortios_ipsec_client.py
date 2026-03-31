@@ -40,23 +40,26 @@ from cmk.agent_based.v2 import (
 )
 from cmk.agent_based.v2.render import networkbandwidth
 
-from .fortios_ipsec import FortiIPSec
+from .fortios_ipsec import FortiIPSecVDOM
 
 DISCOVERY_DEFAULT_PARAMETERS = dict({"item_enabled": False})
 
 
 def discovery_fortios_ipsec_client_vpn(
     params: Mapping[str, Any],
-    section: Mapping[str, FortiIPSec],
+    section: Mapping[str, FortiIPSecVDOM],
 ) -> DiscoveryResult:
     discover = params["item_enabled"]
     if discover:
         return
 
-    parent_to_vpns: dict[str, list[FortiIPSec]] = {}
-    for tunnel in section.values():
+    parent_to_vpns: dict[str, list] = {}
+    for obj in section.values():
+        tunnel = obj.ipsec
+        vdom = obj.vdom
         if tunnel and tunnel.fct_uid and tunnel.parent:
-            parent_to_vpns.setdefault(tunnel.parent, []).append(tunnel)
+            item_key = f"{vdom} {tunnel.parent}"
+            parent_to_vpns.setdefault(item_key, []).append(tunnel)
 
     for parent_name in sorted(parent_to_vpns.keys()):
         yield Service(item=f"{parent_name}")
@@ -65,9 +68,22 @@ def discovery_fortios_ipsec_client_vpn(
 def check_fortios_ipsec_client_vpn(
     item: str,
     params: Mapping[str, Any],
-    section: Mapping[str, FortiIPSec],
+    section: Mapping[str, FortiIPSecVDOM],
 ) -> CheckResult:
-    parent_vpns = [tunnel for tunnel in section.values() if tunnel and tunnel.fct_uid and tunnel.parent == item]
+    try:
+        vdom, parent_name = item.split(" ", 1)
+    except ValueError:
+        vdom = None
+        parent_name = item
+
+    parent_vpns = [
+        obj.ipsec
+        for obj in section.values()
+        if obj.ipsec
+        and obj.ipsec.fct_uid
+        and obj.ipsec.parent == parent_name
+        and (vdom is None or obj.vdom == vdom)
+    ]
 
     if not parent_vpns:
         yield Result(
@@ -82,7 +98,10 @@ def check_fortios_ipsec_client_vpn(
 
     summary = f"Users: {total_users}"
 
-    details_lines = [f"User: {tunnel.xauth_user or 'unknown'}, Public IP: {tunnel.rgwy or 'unknown'}, Local IP: {tunnel.tun_id or 'unknown'}" for tunnel in parent_vpns]
+    details_lines = [
+        f"User: {tunnel.xauth_user or 'unknown'}, Public IP: {tunnel.rgwy or 'unknown'}, Local IP: {tunnel.tun_id or 'unknown'}"
+        for tunnel in parent_vpns
+    ]
     details = "\n".join(details_lines)
 
     yield Result(
@@ -127,7 +146,7 @@ def check_fortios_ipsec_client_vpn(
 
 check_plugin_fortios_ipsec_client_vpn = CheckPlugin(
     name="fortios_ipsec_client_vpn",
-    service_name="IPSec Client VPN %s",
+    service_name="IPSec Client VPN VDOM %s",
     sections=["fortios_ipsec"],
     discovery_function=discovery_fortios_ipsec_client_vpn,
     discovery_default_parameters=DISCOVERY_DEFAULT_PARAMETERS,

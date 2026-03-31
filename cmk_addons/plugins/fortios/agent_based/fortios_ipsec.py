@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Optional
 
 from pydantic import BaseModel, model_validator
@@ -96,6 +97,12 @@ class FortiIPSec(BaseModel):
         return f"Type: {self.type}"
 
 
+@dataclass(frozen=True)
+class FortiIPSecVDOM:
+    vdom: str
+    ipsec: FortiIPSec
+
+
 def replace_hyphens(d):
     if isinstance(d, dict):
         new_dict = {}
@@ -109,14 +116,38 @@ def replace_hyphens(d):
         return d
 
 
-def parse_fortios_ipsec(string_table) -> Mapping[str, FortiIPSec] | None:
+def parse_fortios_ipsec(string_table) -> Mapping[str, FortiIPSecVDOM] | None:
     try:
         json_data = json.loads(string_table[0][0])
-    except ValueError:
-        json_data = None
-    if (forti_ipsec_tunnels := json_data[0].get("results")) in ({}, []):
+    except (ValueError, IndexError, TypeError):
         return None
-    return {item["name"]: FortiIPSec(**item) for item in replace_hyphens(forti_ipsec_tunnels)}
+
+    if not isinstance(json_data, list) or not json_data:
+        return None
+
+    result: dict[str, FortiIPSecVDOM] = {}
+
+    for entry in json_data:
+        if not isinstance(entry, dict):
+            continue
+
+        vdom = entry.get("vdom", "root")
+        tunnels = entry.get("results") or []
+
+        for item in replace_hyphens(tunnels):
+            name = item.get("name")
+            if not name:
+                continue
+            key = f"{vdom} {name}"
+            result[key] = FortiIPSecVDOM(
+                vdom=vdom,
+                ipsec=FortiIPSec(**item),
+            )
+
+    if not result:
+        return None
+
+    return result
 
 
 agent_section_fortios_ipsec = AgentSection(
