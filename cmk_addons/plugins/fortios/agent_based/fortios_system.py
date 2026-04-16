@@ -65,21 +65,6 @@ def check_fortios_system(section):
 
     yield Result(state=State.OK, summary=summary, details=details)
 
-    # Metrics (optional)
-    try:
-        version_clean = str(version).lstrip("v")
-        parts = version_clean.split(".")
-        if len(parts) >= 2:
-            major = int(parts[0])
-            minor = int(parts[1])
-            patch = int(parts[2]) if len(parts) > 2 else 0
-            yield Metric("version_numeric", major * 10000 + minor * 100 + patch)
-        if str(build).isdigit():
-            yield Metric("build_number", int(build))
-    except Exception:
-        pass
-
-
 check_plugin_fortios_system = CheckPlugin(
     name="fortios_system",
     service_name="FortiOS System",

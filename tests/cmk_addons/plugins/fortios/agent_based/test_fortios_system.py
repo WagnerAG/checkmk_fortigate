@@ -51,8 +51,6 @@ def test_discover_fortios_system(section: Mapping[str, DeviceInfo], expected_ser
             FULL_SECTION,
             [
                 Result(state=State.OK, summary="Version v7.2.7 Build 1577", details="Model: FortiGate FGT60F, Hostname: Hostname01, Serial: FGTSerialNumber"),
-                Metric("version_numeric", 70207),
-                Metric("build_number", 1577),
             ],
         ),
         ({}, [Result(state=State.UNKNOWN, summary="No data received")]),
