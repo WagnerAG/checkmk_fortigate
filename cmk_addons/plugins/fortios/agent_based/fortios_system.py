@@ -25,7 +25,7 @@ fortigate_firmware extension, but reuses the existing FortiOS agent output.
 
 from __future__ import annotations
 
-from cmk.agent_based.v2 import CheckPlugin, Metric, Result, Service, State
+from cmk.agent_based.v2 import CheckPlugin, Result, Service, State
 
 
 def discover_fortios_system(section):
