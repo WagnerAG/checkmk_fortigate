@@ -5,9 +5,23 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
+
+## [2.0.3] - 2026-03-31
+### 🚀 Added
+- Implemented firmware checks (separate services for Model and Serial Number) from @realarna
+ https://github.com/realarna/CheckMK_Fortigate_API_Monitoring
+- New check to monitor certificate expiration
+
+### 🐛 Fixed
+- Issue with managed switch checks: The check crashes when switches are disconnected
+- Fix DHCP scope check issue with datatype
+
 ## [2.0.2] - 2026-03-14
 ### 🐛 Fixed
 - Fix DHCP scope check issue with datatype
+
+### 🔄 Changed
+- Breaking Change: Add VDOM functionality to IPSec Check, the service name changes and contains now the VDOM name.
 
 ## [2.0.1] - 2026-01-12
 ### 🔄 Changed
