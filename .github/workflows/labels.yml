@@ -8,11 +8,23 @@ on:
       - cmk*
     paths:
       - .github/labels.yml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   labels:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v4

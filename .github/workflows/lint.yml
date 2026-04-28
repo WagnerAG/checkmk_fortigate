@@ -4,14 +4,28 @@ on:
   push:
     paths:
       - '**/*.py'
-      
+  pull_request:
+    paths:
+      - '**/*.py'
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   ruff_lint:
 
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
     - uses: actions/checkout@v4
@@ -19,7 +33,9 @@ jobs:
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
-        python-version: 3.12
+        python-version: '3.12'
+        cache: pip
+        cache-dependency-path: .devcontainer/requirements.txt
 
     - name: Install Ruff
       run: pip install ruff
