@@ -22,23 +22,22 @@ Special agent for monitoring Fortinet Devices with FortiOS via REST API 2.x with
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 import sys
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import requests
 import urllib3
-from requests.adapters import HTTPAdapter
-
 from cmk.special_agents.v0_unstable.agent_common import (
     ConditionalPiggybackSection,
     SectionWriter,
     special_agent_main,
 )
-from cmk.utils import password_store
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
+from cmk.utils import password_store
+from requests.adapters import HTTPAdapter
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 _LOGGER = logging.getLogger("agent_fortios")
@@ -111,6 +110,11 @@ _SECTIONS = [
     _SectionSpec(
         name="device_info",
         path="monitor/system/status",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
+        name="firmware",
+        path="monitor/system/firmware",
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
@@ -188,6 +192,33 @@ def parse_arguments(argv: Sequence[str] | None) -> Args:
         type=str,
         help=("Generate the API token through the CLI"),
     )
+    # Firmware monitoring behaviour
+    parser.add_argument(
+        "--branch-change-critical",
+        dest="branch_change_critical",
+        action="store_true",
+        default=True,
+        help="Consider branch change critical (default)",
+    )
+    parser.add_argument(
+        "--no-branch-change-critical",
+        dest="branch_change_critical",
+        action="store_false",
+        help="Do not consider branch change critical",
+    )
+    parser.add_argument(
+        "--ok-if-unmatured-branch",
+        dest="ok_if_unmatured_branch",
+        action="store_true",
+        default=False,
+        help="Return OK when only immature branch upgrades exist",
+    )
+    parser.add_argument(
+        "--no-ok-if-unmatured-branch",
+        dest="ok_if_unmatured_branch",
+        action="store_false",
+        help="Disable OK override for immature branch upgrades",
+    )
     parser.add_argument("server", type=str, help="Hostname or IP address")
     return parser.parse_args(argv)
 
@@ -212,6 +243,39 @@ class JsonConcatenator:
 
     def get_store(self):
         return self.store
+
+
+def _normalize_firmware_payload(payload):
+    """Normalize firmware monitor payload across FortiOS versions.
+
+    Some FortiOS releases wrap data in a "results" object while newer ones may
+    expose "current" / "available" at the top level.
+    """
+
+    if not isinstance(payload, dict):
+        return payload
+
+    normalized = dict(payload)
+    existing_results = normalized.get("results")
+    results = dict(existing_results) if isinstance(existing_results, dict) else {}
+
+    for key in ("current", "running", "installed", "active"):
+        current_obj = normalized.get(key)
+        if isinstance(current_obj, dict) and "current" not in results:
+            results["current"] = current_obj
+            break
+
+    for key in ("available", "images", "upgrades", "upgrade_images", "firmwares"):
+        available_list = normalized.get(key)
+        if isinstance(available_list, list) and "available" not in results:
+            results["available"] = available_list
+            break
+
+    if results:
+        normalized["results"] = results
+
+    normalized.setdefault("status", "success")
+    return normalized
 
 
 class SpecialAgentError(Exception):
@@ -372,6 +436,21 @@ def agent_fortios(args: Args) -> int:
             # data = fortios.collect_section_data(spec) Redundant, already collected above
             json_store.add_json(data, spec.name)
         else:
+            # Firmware payload normalization + inject monitoring configuration flags
+            if spec.name == "firmware" and isinstance(data, dict):
+                data = _normalize_firmware_payload(data)
+                try:
+                    cfg = data.get("config", {}) if isinstance(data.get("config"), dict) else {}
+                    cfg.update(
+                        {
+                            "critical_on_branch_change": bool(getattr(args, "branch_change_critical", True)),
+                            "ok_if_unmatured_branch": bool(getattr(args, "ok_if_unmatured_branch", False)),
+                        }
+                    )
+                    data["config"] = cfg
+                except Exception:
+                    pass
+
             if isinstance(data, list):
                 status_check = data[0]["status"]
             elif isinstance(data, dict):

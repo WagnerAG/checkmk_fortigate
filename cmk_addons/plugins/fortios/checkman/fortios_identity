@@ -1,0 +1,14 @@
+title: Fortios: Identity
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check creates two services ("FortiOS Model" and "FortiOS Serial").
+ It changes the status to {unknown} if there is no information available.
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ Two services will be created.
