@@ -31,10 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         cmk:
-          - '2.3.0-latest'
           - '2.4.0-latest'
-          - '2.5.0-latest'
-
     env:
       OMD_ROOT: /omd/sites/cmk
       OMD_SITE: cmk
