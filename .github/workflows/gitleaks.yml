@@ -1,6 +1,9 @@
 name: gitleaks
 on:
   push:
+    branches:
+      - main
+      - cmk*
   pull_request:
   workflow_dispatch:
   schedule:
