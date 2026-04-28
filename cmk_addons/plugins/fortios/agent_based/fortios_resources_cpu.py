@@ -31,7 +31,7 @@ from cmk.agent_based.v2.render import (
 
 from .fortios_resources import FortiResource
 
-DEFAULT_CPU_LEVELS: Dict = {"util": ("fixed", (80, 90))}
+DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 
 
 def discovery_fortios_resources_cpu(section: FortiResource) -> DiscoveryResult:
