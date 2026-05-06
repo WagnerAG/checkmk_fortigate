@@ -6,7 +6,10 @@
 
 ---
 
-## [2.0.4] - 2026-04-30
+## [2.0.4] - 2026-05-06
+### 🚀 Added
+- New check to monitor certificate expiration
+
 ### 🔄 Changed
 - Declare Checkmk 2.5 release-line compatibility (`version.usable_until` set to `2.5.99`).
 - Update development and CI container images to Checkmk 2.5 image names.
@@ -19,7 +22,6 @@
 ### 🚀 Added
 - Implemented firmware checks (separate services for Model and Serial Number) from @realarna
  https://github.com/realarna/CheckMK_Fortigate_API_Monitoring
-- New check to monitor certificate expiration
 
 ### 🐛 Fixed
 - Issue with managed switch checks: The check crashes when switches are disconnected
