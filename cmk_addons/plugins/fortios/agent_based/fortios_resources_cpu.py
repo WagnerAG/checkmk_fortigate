@@ -24,15 +24,15 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
-from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State, check_levels
+from cmk.agent_based.v1 import check_levels
+from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 from cmk.agent_based.v2.render import (
     percent,
 )
 
 from .fortios_resources import FortiResource
 
-DEFAULT_CPU_LEVELS: Dict = {"util": ("fixed", (80, 90))}
-
+DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 
 def discovery_fortios_resources_cpu(section: FortiResource) -> DiscoveryResult:
     yield Service()
@@ -43,7 +43,7 @@ def check_fortios_resources_cpu(params: Mapping[str, Any], section: FortiResourc
 
     yield Result(state=State.OK, summary="Total usage")
 
-    yield Metric("util", section.total_cpu, levels=cpu_levels[1], boundaries=(0, 100))
+    yield Metric("util", section.total_cpu, levels=cpu_levels, boundaries=(0, 100))
     yield from check_levels(
         value=section.total_cpu,
         label="CPU load",
@@ -55,7 +55,7 @@ def check_fortios_resources_cpu(params: Mapping[str, Any], section: FortiResourc
 
     if len(section.vdoms) > 1:
         for item in section.vdoms:
-            yield Metric(item.vdom, item.results.cpu, levels=cpu_levels[1], boundaries=(0, 100))
+            yield Metric(item.vdom, item.results.cpu, levels=cpu_levels, boundaries=(0, 100))
 
 
 check_plugin_fortios_resources_cpu = CheckPlugin(

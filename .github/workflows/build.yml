@@ -3,19 +3,36 @@ name: build
 on:
   push:
     branches:
-    - '**'
+    - main
+    - cmk*
     tags-ignore:
     - 'v*'
   pull_request:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build Checkmk package
+    name: Build Checkmk package (Checkmk ${{ matrix.cmk }})
     runs-on: ubuntu-latest
     container:
-      image: checkmk/check-mk-community:2.5.0-latest
+      image: checkmk/check-mk-community:${{ matrix.cmk }}
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cmk:
+          - '2.5.0-latest'
     env:
       OMD_ROOT: /omd/sites/cmk
       OMD_SITE: cmk
@@ -25,11 +42,11 @@ jobs:
     steps:
       - name: Initialize Checkmk Site
         run: /docker-entrypoint.sh /bin/true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup links
         run: .devcontainer/symlink.sh
-        
+
       - name: Update GITHUB_PATH
         run: echo "/omd/sites/cmk/bin" >> $GITHUB_PATH
 
@@ -40,5 +57,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.cmkpkg.outputs.pkgfile }}
+          name: ${{ steps.cmkpkg.outputs.pkgfile }}-cmk-${{ matrix.cmk }}
           path: ${{ steps.cmkpkg.outputs.pkgfile }}
