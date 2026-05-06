@@ -2,18 +2,44 @@ name: pytest
 
 on:
   push:
+    branches:
+      - main
+      - cmk*
     paths:
       - '**/*.py'
-      
+  pull_request:
+    paths:
+      - '**/*.py'
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
   pytest:
-
+    name: pytest (Checkmk ${{ matrix.cmk }})
     runs-on: ubuntu-latest
     container:
-      image: checkmk/check-mk-raw:2.4.0-latest
+      image: checkmk/check-mk-raw:${{ matrix.cmk }}
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cmk:
+          - '2.3.0-latest'
+          - '2.4.0-latest'
+          - '2.5.0-latest'
 
     env:
       OMD_ROOT: /omd/sites/cmk
@@ -25,19 +51,48 @@ jobs:
     - name: Initialize Checkmk Site
       run: /docker-entrypoint.sh /bin/true
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup links
       run: ./.devcontainer/symlink.sh
+
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-cmk-${{ matrix.cmk }}-${{ hashFiles('.devcontainer/requirements.txt') }}
+        restore-keys: |
+          pip-${{ runner.os }}-cmk-${{ matrix.cmk }}-
 
     - name: Install pytest
       run: REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt /omd/sites/cmk/bin/python3 -m pip install --user -r $GITHUB_WORKSPACE/.devcontainer/requirements.txt
 
     - name: Update GITHUB_PATH
       run: echo "/omd/sites/cmk/bin" >> $GITHUB_PATH
-      
+
     - name: Add local bin to PATH
       run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Run pytest
-      run: /omd/sites/cmk/bin/python3 -m pytest $GITHUB_WORKSPACE
+      run: |
+        /omd/sites/cmk/bin/python3 -m pytest "$GITHUB_WORKSPACE" \
+          --junitxml="$GITHUB_WORKSPACE/pytest-report.xml" \
+          --cov="$GITHUB_WORKSPACE" \
+          --cov-report=xml:"$GITHUB_WORKSPACE/coverage.xml" \
+          --cov-report=term
+
+    - name: Publish test report
+      uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: pytest (${{ matrix.cmk }})
+        path: pytest-report.xml
+        reporter: java-junit
+        fail-on-error: false
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-${{ matrix.cmk }}
+        path: coverage.xml
