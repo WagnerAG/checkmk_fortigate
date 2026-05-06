@@ -5,7 +5,7 @@
     "files": {
         "cmk_addons_plugins": [
             "fortios/agent_based/fortios_bgp_peer.py",
-            "fortios/agent_based/fortios_certificate.py",
+            "fortios/agent_based/fortios_certificates.py",
             "fortios/agent_based/fortios_device_info_inventory.py",
             "fortios/agent_based/fortios_dhcp_lease.py",
             "fortios/agent_based/fortios_dhcp_scope.py",
