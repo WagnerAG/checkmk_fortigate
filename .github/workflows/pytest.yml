@@ -26,7 +26,7 @@ jobs:
     name: pytest (Checkmk ${{ matrix.cmk }})
     runs-on: ubuntu-latest
     container:
-      image: checkmk/check-mk-raw:${{ matrix.cmk }}
+      image: checkmk/check-mk-community:${{ matrix.cmk }}
 
     permissions:
       contents: read
@@ -37,8 +37,6 @@ jobs:
       fail-fast: false
       matrix:
         cmk:
-          - '2.3.0-latest'
-          - '2.4.0-latest'
           - '2.5.0-latest'
 
     env:
@@ -50,7 +48,10 @@ jobs:
     steps:
     - name: Initialize Checkmk Site
       run: /docker-entrypoint.sh /bin/true
-
+      
+    - name: Mark workspace as safe for git
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      
     - uses: actions/checkout@v6
 
     - name: Setup links

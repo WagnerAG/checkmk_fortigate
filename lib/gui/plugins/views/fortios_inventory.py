@@ -27,7 +27,7 @@ from cmk.gui.type_defs import (
     VisualLinkSpec,
 )
 from cmk.gui.views.store import multisite_builtin_views
-from cmk.utils.user import UserId
+from cmk.ccc.user import UserId
 
 multisite_builtin_views.update(
     {
@@ -111,7 +111,7 @@ multisite_builtin_views.update(
                 "has_inv": {"is_has_inv": "1"},
             },
             "owner": UserId.builtin(),
-            "megamenu_search_terms": [],
+            "main_menu_search_terms": [],
         },
     }
 )
