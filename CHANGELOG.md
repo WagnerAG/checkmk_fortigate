@@ -6,6 +6,15 @@
 
 ---
 
+## [2.0.4] - 2026-04-30
+### 🔄 Changed
+- Declare Checkmk 2.5 release-line compatibility (`version.usable_until` set to `2.5.99`).
+- Update development and CI container images to Checkmk 2.5 image names.
+
+### 🐛 Fixed
+- Fix FortiOS inventory GUI view loading on Checkmk 2.5 by importing `UserId` from `cmk.ccc.user`.
+- Fix FortiOS inventory view metadata for Checkmk 2.5 by using `main_menu_search_terms`.
+
 ## [2.0.3] - 2026-03-31
 ### 🚀 Added
 - Implemented firmware checks (separate services for Model and Serial Number) from @realarna
