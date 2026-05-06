@@ -5,6 +5,7 @@
     "files": {
         "cmk_addons_plugins": [
             "fortios/agent_based/fortios_bgp_peer.py",
+            "fortios/agent_based/fortios_certificates.py",
             "fortios/agent_based/fortios_device_info_inventory.py",
             "fortios/agent_based/fortios_dhcp_lease.py",
             "fortios/agent_based/fortios_dhcp_scope.py",
@@ -38,6 +39,7 @@
             "fortios/agent_based/fortios_system.py",
             "fortios/agent_based/fortios_uptime.py",
             "fortios/checkman/fortios_bgp_peer",
+            "fortios/checkman/fortios_certificate",
             "fortios/checkman/fortios_dhcp_scope",
             "fortios/checkman/fortios_firmware",
             "fortios/checkman/fortios_ha_history",
@@ -63,6 +65,7 @@
             "fortios/checkman/fortios_uptime",
             "fortios/libexec/agent_fortios",
             "fortios/rulesets/datasource_program.py",
+            "fortios/rulesets/fortios_certificate_check_parameter.py",
             "fortios/rulesets/fortios_dhcp_scope_check_parameter.py",
             "fortios/rulesets/fortios_interface_discovery_parameter.py",
             "fortios/rulesets/fortios_ipsec_check_parameter.py",

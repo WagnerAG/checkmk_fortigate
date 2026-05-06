@@ -6,7 +6,10 @@
 
 ---
 
-## [2.0.4] - 2026-04-30
+## [2.0.4] - 2026-05-06
+### 🚀 Added
+- New check to monitor certificate expiration
+
 ### 🔄 Changed
 - Declare Checkmk 2.5 release-line compatibility (`version.usable_until` set to `2.5.99`).
 - Update development and CI container images to Checkmk 2.5 image names.

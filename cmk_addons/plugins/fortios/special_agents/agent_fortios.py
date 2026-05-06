@@ -171,6 +171,11 @@ _SECTIONS = [
         path="monitor/system/dhcp",
         min_version=_REST_VERSION,
     ),
+    _SectionSpec(
+        name="certificates",
+        path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true",
+        min_version=_REST_VERSION,
+    ),
 ]
 
 
