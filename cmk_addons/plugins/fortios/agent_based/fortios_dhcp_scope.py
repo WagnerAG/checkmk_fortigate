@@ -31,7 +31,7 @@ from pydantic import BaseModel
 
 from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State, check_levels
 
-DEFAULT_DHCP_LEVELS: Dict = {"dhcp_scope_levels": ("fixed", (80.0, 90.0))}
+DEFAULT_DHCP_LEVELS: Dict = {"dhcp_scope_levels": ("fixed", (80, 90))}
 
 
 class IpRange(BaseModel):
