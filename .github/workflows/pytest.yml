@@ -51,7 +51,7 @@ jobs:
     - name: Initialize Checkmk Site
       run: /docker-entrypoint.sh /bin/true
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup links
       run: ./.devcontainer/symlink.sh
