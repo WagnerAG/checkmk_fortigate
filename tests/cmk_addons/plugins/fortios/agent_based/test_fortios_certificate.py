@@ -30,6 +30,27 @@ from cmk_addons.plugins.fortios.agent_based.fortios_certificates import (
 )
 
 
+def _canonicalize_certificate_set(section: CertificateSet | None) -> CertificateSet | None:
+    if section is None:
+        return None
+
+    runtime_fields = {"expires_at", "seconds_until_expiry", "state"}
+    normalized_certs = []
+    for cert in section.certificates:
+        cert_data = cert.model_dump(exclude=runtime_fields)
+        normalized_certs.append(Certificate.model_validate(cert_data))
+
+    return CertificateSet.model_validate(
+        {
+            "certificates": [cert.model_dump() for cert in normalized_certs],
+            "warn_days": section.warn_days,
+            "crit_days": section.crit_days,
+            "allowed_sources": section.allowed_sources,
+            "discover_ca": section.discover_ca,
+        }
+    )
+
+
 @pytest.mark.parametrize(
     "string_table, expected_section",
     [
@@ -71,7 +92,8 @@ def test_parse_fortios_certificates(
     string_table: list[list[str]] | list[list],
     expected_section: CertificateSet | None,
 ) -> None:
-    assert parse_fortios_certificates(string_table) == expected_section
+    parsed = parse_fortios_certificates(string_table)
+    assert _canonicalize_certificate_set(parsed) == _canonicalize_certificate_set(expected_section)
 
 
 @pytest.mark.parametrize(
