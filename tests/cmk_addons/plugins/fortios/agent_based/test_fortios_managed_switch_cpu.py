@@ -35,17 +35,28 @@ from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_health import
 
 PerformanceStatus.model_rebuild()
 
+_perf_legacy = PerformanceStatus(
+    cpu=CPU(idle=TimeUnit(unit="%", value=87), nice=TimeUnit(unit="%", value=0), system=TimeUnit(unit="%", value=12), user=TimeUnit(unit="%", value=1)),
+    memory=Memory(used=TimeUnit(unit="%", value=36)),
+    uptime=Uptime(days=TimeUnit(unit="days", value=113), hours=TimeUnit(unit="hours", value=5), minutes=TimeUnit(unit="minutes", value=16)),
+)
+_poe = POE(max_value=800, unit="watts", value=26.1)
+_expected = (
+    Result(state=State.OK, summary="Total CPU: 13%, nice: 0%, system: 12%, user: 1%"),
+    Metric("util_average_1", 13, boundaries=(0, 100)),
+    Metric("idle", 87),
+    Metric("user", 1),
+    Metric("system", 12),
+)
 
-# Test data for check_fortios_switch_cpu
+
 @pytest.mark.parametrize(
     "section, expected_results",
     [
-        (
-            (FortiosSwitchData(performance_status=PerformanceStatus(cpu=CPU(idle=TimeUnit(unit="%", value=87), nice=TimeUnit(unit="%", value=0), system=TimeUnit(unit="%", value=12), user=TimeUnit(unit="%", value=1)), memory=Memory(used=TimeUnit(unit="%", value=36)), uptime=Uptime(days=TimeUnit(unit="days", value=113), hours=TimeUnit(unit="hours", value=5), minutes=TimeUnit(unit="minutes", value=16))), poe=POE(max_value=800, unit="watts", value=26.1))),
-            (Result(state=State.OK, summary="Total CPU: 13%, nice: 0%, system: 12%, user: 1%"), Metric("util_average_1", 13, boundaries=(0, 100)), Metric("idle", 87), Metric("user", 1), Metric("system", 12)),
-        ),
+        (FortiosSwitchData(performance_status=_perf_legacy, poe=_poe), _expected),
+        (FortiosSwitchData(performance=_perf_legacy, poe=_poe), _expected),
     ],
 )
-def test_check_managed_fortios_switch_cpu(section: FortiosSwitchData, expected_results: list) -> None:
+def test_check_managed_fortios_switch_cpu(section: FortiosSwitchData, expected_results: tuple) -> None:
     check_results = tuple(check_fortios_switch_cpu(section))
     assert check_results == expected_results

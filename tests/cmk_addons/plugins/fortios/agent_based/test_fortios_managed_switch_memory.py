@@ -35,14 +35,20 @@ from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_memory import
 
 PerformanceStatus.model_rebuild()
 
+_perf_legacy = PerformanceStatus(
+    cpu=CPU(idle=TimeUnit(unit="%", value=87), nice=TimeUnit(unit="%", value=0), system=TimeUnit(unit="%", value=12), user=TimeUnit(unit="%", value=1)),
+    memory=Memory(used=TimeUnit(unit="%", value=36)),
+    uptime=Uptime(days=TimeUnit(unit="days", value=113), hours=TimeUnit(unit="hours", value=5), minutes=TimeUnit(unit="minutes", value=16)),
+)
+_poe = POE(max_value=800, unit="watts", value=26.1)
+_expected = [Result(state=State.OK, summary="Total Memory: 36%"), Metric("mem_used", 36, boundaries=(0, 100))]
+
 
 @pytest.mark.parametrize(
     "section, expected_check_result",
     [
-        (
-            (FortiosSwitchData(performance_status=PerformanceStatus(cpu=CPU(idle=TimeUnit(unit="%", value=87), nice=TimeUnit(unit="%", value=0), system=TimeUnit(unit="%", value=12), user=TimeUnit(unit="%", value=1)), memory=Memory(used=TimeUnit(unit="%", value=36)), uptime=Uptime(days=TimeUnit(unit="days", value=113), hours=TimeUnit(unit="hours", value=5), minutes=TimeUnit(unit="minutes", value=16))), poe=POE(max_value=800, unit="watts", value=26.1))),
-            [Result(state=State.OK, summary="Total Memory: 36%"), Metric("mem_used", 36, boundaries=(0, 100))],
-        ),
+        (FortiosSwitchData(performance_status=_perf_legacy, poe=_poe), _expected),
+        (FortiosSwitchData(performance=_perf_legacy, poe=_poe), _expected),
     ],
 )
 def test_check_fortios_managed_switch_memory(section: FortiosSwitchData, expected_check_result) -> None:

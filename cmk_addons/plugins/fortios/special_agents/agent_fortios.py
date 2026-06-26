@@ -150,8 +150,15 @@ _SECTIONS = [
     ),
     ### Hangs for longer periods sometime, produces not output
     _SectionSpec(
-        name="managed_switch_health",
+        name="managed_switch_health_legacy",
         path="monitor/switch-controller/managed-switch/health",
+        min_version=_REST_VERSION,
+        piggyback=True,
+        piggyback_section="switch",
+    ),
+    _SectionSpec(
+        name="managed_switch_health",
+        path="monitor/switch-controller/managed-switch/health-status",
         min_version=_REST_VERSION,
         piggyback=True,
         piggyback_section="switch",
@@ -472,11 +479,11 @@ def agent_fortios(args: Args) -> int:
     switch_status = json_store.get_value("managed_switch_status")
     switch_status_data = switch_status.get("results")
 
-    switch_health = json_store.get_value("managed_switch_health")
-    if switch_health:
-        switch_health_data = switch_health.get("results")
-    else:
-        switch_health_data = {}
+    switch_health_legacy = json_store.get_value("managed_switch_health_legacy")
+    switch_health_legacy_data = switch_health_legacy.get("results", {}) if switch_health_legacy else {}
+
+    switch_health_new = json_store.get_value("managed_switch_health")
+    switch_health_new_data = switch_health_new.get("results", []) if switch_health_new else []
 
     port_stats = json_store.get_value("managed_switch_port_stats")
     switch_port_stats = port_stats.get("results")
@@ -499,8 +506,9 @@ def agent_fortios(args: Args) -> int:
 
         # map the switch data to the correct switch
         if "7.2" in managed_switch["version"]:
+            # FortiOS 7.2: health endpoint returns dict keyed by serial
             switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_serial), None)
-            switch_health_data_result = switch_health_data.get(switch.get("serial"))
+            switch_health_data_result = switch_health_legacy_data.get(switch_serial)
 
             with ConditionalPiggybackSection(switch["name"]):
                 with SectionWriter("fortios_managed_switch_interface") as writer:
@@ -508,8 +516,12 @@ def agent_fortios(args: Args) -> int:
                 with SectionWriter("fortios_managed_switch_health") as writer:
                     writer.append_json(switch_health_data_result)
         else:
+            # FortiOS 7.4+: health-status endpoint returns list of objects
             switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_id), None)
-            switch_health_data_result = switch_health_data.get(switch.get("switch-id"))
+            switch_health_data_result = next(
+                (item for item in switch_health_new_data if item.get("serial") == switch_serial),
+                None,
+            )
 
             with ConditionalPiggybackSection(switch["switch-id"]):
                 with SectionWriter("fortios_managed_switch_interface") as writer:
