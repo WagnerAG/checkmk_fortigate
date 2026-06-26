@@ -28,6 +28,7 @@
             "fortios/agent_based/fortios_managed_switch_inventory.py",
             "fortios/agent_based/fortios_managed_switch_memory.py",
             "fortios/agent_based/fortios_managed_switch_poe.py",
+            "fortios/agent_based/fortios_managed_switch_summary.py",
             "fortios/agent_based/fortios_managed_switch_uptime.py",
             "fortios/agent_based/fortios_ntp.py",
             "fortios/agent_based/fortios_resources.py",
@@ -83,8 +84,8 @@
     },
     "name": "fortios",
     "title": "FortiOS Special Agent",
-    "version": "2.0.4",
+    "version": "2.4.0",
     "version.min_required": "2.3.0p1",
     "version.packaged": "cmk-mkp-tool 1.0.0",
-    "version.usable_until": "2.5.99",
+    "version.usable_until": "2.4.99",
 }

@@ -5,6 +5,20 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
+## [2.4.0] - 2026-06-26
+### 🚀 Added
+- FortiSwitches: added Health Summary check evaluating component ratings (CPU, Memory, Temperature, PoE, Fan, PSU) from the new API endpoint; requires FortiOS 7.4+
+
+### 🔄 Changed
+- Due to compatibility issues, this project maintains two separate release tracks:
+    - CheckMK 2.4.x → main branch → FortiOS Plugin name: v2.4.x
+    - CheckMK 2.5.x → dedicated 2.5.x branch → FortiOS Plugin name: v2.5.x
+- Declare Checkmk 2.4 release-line compatibility (`version.usable_until` set to `2.4.99`).
+
+### 🐛 Fixed
+- FortiSwitches:
+  - adopted CPU, Memory, PoE, Health and Uptime checks for new API endpoint (health-status)
+  - maintains backward compatibility with FortiOS 7.2
 
 ## [2.0.4] - 2026-05-06
 ### 🚀 Added
