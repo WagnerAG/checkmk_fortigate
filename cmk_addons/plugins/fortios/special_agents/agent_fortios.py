@@ -385,6 +385,10 @@ class FortiOS:
             _LOGGER.error(f"Login failed: {e}")
             raise AuthError(f"Login failed {e}") from e
 
+        if section_response.status_code == 401:
+            _LOGGER.error("Authentication failed: invalid API token (HTTP 401)")
+            raise AuthError("Authentication failed: invalid API token (HTTP 401)")
+
         if section_response.status_code == 429:
             _LOGGER.error(f"Collecting section: {spec.name} failed. Reason: HTTP status 429; error: ({section_response.status_code}) {section_response.reason}")
             raise AuthError("IP address blacklisted or too many requests")
@@ -477,19 +481,25 @@ def agent_fortios(args: Args) -> int:
 
     # Process piggyback data for switches
     switch_status = json_store.get_value("managed_switch_status")
-    switch_status_data = switch_status.get("results")
+    if not switch_status:
+        _LOGGER.error("managed_switch_status data unavailable, skipping switch piggyback processing")
+        return 0
+    switch_status_data = switch_status.get("results", [])
 
     switch_health_legacy = json_store.get_value("managed_switch_health_legacy")
     switch_health_legacy_data = switch_health_legacy.get("results", {}) if switch_health_legacy else {}
 
-    switch_health_new = json_store.get_value("managed_switch_health")
-    switch_health_new_data = switch_health_new.get("results", []) if switch_health_new else []
+    switch_health = json_store.get_value("managed_switch_health")
+    switch_health_data = switch_health.get("results", []) if switch_health else []
 
     port_stats = json_store.get_value("managed_switch_port_stats")
-    switch_port_stats = port_stats.get("results")
+    switch_port_stats = port_stats.get("results", []) if port_stats else []
 
     managed_switch = json_store.get_value("managed_switch")
-    switch_data = managed_switch.get("results")
+    if not managed_switch:
+        _LOGGER.error("managed_switch data unavailable, skipping switch piggyback processing")
+        return 0
+    switch_data = managed_switch.get("results", [])
 
     for switch in switch_status_data:
         if switch.get("status") != "Connected":
@@ -519,7 +529,7 @@ def agent_fortios(args: Args) -> int:
             # FortiOS 7.4+: health-status endpoint returns list of objects
             switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_id), None)
             switch_health_data_result = next(
-                (item for item in switch_health_new_data if item.get("serial") == switch_serial),
+                (item for item in switch_health_data if item.get("serial") == switch_serial),
                 None,
             )
 
