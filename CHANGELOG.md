@@ -13,7 +13,8 @@
 - Due to compatibility issues, this project maintains two separate release tracks:
     - CheckMK 2.4.x → main branch → FortiOS Plugin name: v2.4.x
     - CheckMK 2.5.x → dedicated 2.5.x branch → FortiOS Plugin name: v2.5.x
-- Declare Checkmk 2.4 release-line compatibility (`version.usable_until` set to `2.4.99`).
+- Declare Checkmk 2.4 release-line compatibility (`version.usable_until` set to `2.4.99`)
+- Improved error handling in special agent for switches and authentication errors (issue [#24](https://github.com/WagnerAG/checkmk_fortigate/issues/24))
 
 ### 🐛 Fixed
 - FortiSwitches:
