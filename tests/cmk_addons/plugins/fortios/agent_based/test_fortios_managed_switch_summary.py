@@ -15,8 +15,6 @@
 # WAGNER AG
 # Developer: opensource@wagner.ch
 
-import pytest
-
 from cmk.agent_based.v2 import Result, Service, State
 from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_health import (
     CPU,
