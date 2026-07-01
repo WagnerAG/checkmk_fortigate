@@ -103,7 +103,7 @@ class AccessPoint(BaseModel):
     status: str
     state: str
     clients: int
-    local_ipv4_addr: Optional[str] = "Unknown"
+    local_addr: Optional[str] = "Unknown"
     board_mac: str
     last_reboot_time: Optional[str] = "Unknown"
     ssid: List[SSIDRadio]
@@ -120,7 +120,7 @@ class AccessPoint(BaseModel):
 
     @property
     def summary_status(self):
-        return f"Status: {self.status}, State: {self.state}, Clients: {self.clients}, IP: {self.local_ipv4_addr}"
+        return f"Status: {self.status}, State: {self.state}, Clients: {self.clients}, IP: {self.local_addr}"
 
     @property
     def details(self):
