@@ -23,6 +23,7 @@
 - Improved error handling in dhcp check (issue [#](https://github.com/WagnerAG/checkmk_fortigate/issues/15))
 - Fix wrong import for fortios_inventory (issue [#](https://github.com/WagnerAG/checkmk_fortigate/issues/33))
   - Note: Due to API changes introduced by Fortinet between versions 7.4 and 7.6, the Inventory view is fully supported only on FortiOS 7.6. On FortiOS 7.4, some information may be unavailable
+- prevent crashes on unlicensed hardware and improve license check robustness
 
 ## [2.0.4] - 2026-05-06
 ### 🚀 Added

@@ -100,11 +100,12 @@ class FortiGuardModule(ModuleInterface):
 class SupportDetail(BaseModel):
     status: str
     support_level: str
-    expires: int
+    expires: Optional[int] | None = None
 
 
 class Support(BaseModel):
     hardware: Optional[SupportDetail] | None = None
+    comprehensive: Optional[SupportDetail] | None = None
     enhanced: SupportDetail | None = None
 
 
@@ -124,18 +125,35 @@ class FortiCareModule(ModuleInterface):
 
     @property
     def summary(self):
-        expires_enhanced = render.timespan(self.support.enhanced.expires - time.time())
-        return f"Account: {self.account}, Status: {self.status}, Expires: {expires_enhanced}"
+        if self.support and self.support.enhanced and self.support.enhanced.expires:
+            expires_enhanced = render.timespan(self.support.enhanced.expires - time.time())
+            return f"Account: {self.account}, Status: {self.status}, Expires: {expires_enhanced}"
+        return f"Account: {self.account}, Status: {self.status}, Enhanced support: not licensed"
 
     @property
     def details(self):
-        if "hardware" in self.support:
+        if self.support and self.support.hardware and self.support.hardware.expires:
             expires_hardware = render.timespan(self.support.hardware.expires - time.time())
+            hardware_type = "Hardware"
             status_hardware = self.support.hardware.status
+        elif self.support and self.support.comprehensive and self.support.comprehensive.expires:
+            expires_hardware = render.timespan(self.support.comprehensive.expires - time.time())
+            hardware_type = "Comprehensive"
+            status_hardware = self.support.comprehensive.status
         else:
             expires_hardware = "N/A"
-            status_hardware = "N/A - virtual platform"
-        return f"Support Enhanced: {self.support.enhanced.status} expires in: {convert_number_of_days(self.support.enhanced.expires)} days, Support Hardware: {status_hardware} expires in: {expires_hardware})"
+            hardware_type = None
+            status_hardware = "not licensed"
+
+        if self.support and self.support.enhanced and self.support.enhanced.expires:
+            status_enhanced = self.support.enhanced.status
+            expires_enhanced = f"{convert_number_of_days(self.support.enhanced.expires)} days"
+        else:
+            status_enhanced = "not licensed"
+            expires_enhanced = "N/A"
+
+        hw_part = f"{hardware_type} support: {status_hardware}" if hardware_type else f"Support: {status_hardware}"
+        return f"Support Enhanced: {status_enhanced} expires in: {expires_enhanced}, {hw_part} expires in: {expires_hardware})"
 
 
 # AppCtrl module
@@ -216,8 +234,8 @@ class Vdom(ModuleInterface):
 
 
 class LicenseStatus(BaseModel):
-    results: Dict[str, ModuleInterface]
-    vdom: str
+    results: Optional[Dict[str, ModuleInterface]] | None = None
+    vdom: Optional[str] | None = None
 
     @field_validator("results", mode="before")
     @classmethod
@@ -240,10 +258,16 @@ class LicenseStatus(BaseModel):
 def parse_fortios_license(string_table) -> Mapping[str, str] | None:
     try:
         json_data = json.loads(string_table[0][0])
-    except ValueError:
-        json_data = {}  # Just defers the crash to line 226
+    except (ValueError, IndexError):
+        return None
 
-    license_modules = LicenseStatus(**json_data)
+    try:
+        license_modules = LicenseStatus(**json_data)
+    except Exception:
+        return None
+
+    if not license_modules.results:
+        return None
 
     return {key: item for key, item in license_modules.results.items()}
 
@@ -261,17 +285,24 @@ def discovery_fortios_license(params: Mapping[str, Any], section: Mapping[str, s
 
 
 def convert_number_of_days(epoch_time):
+    if epoch_time is None:
+        return 0
     days, _ = divmod(epoch_time - time.time(), 86400)
     return days
 
 
 def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping[str, str]) -> CheckResult:
+    if not section:
+        yield Result(state=State.UNKNOWN, summary="No license data available")
+        return
+
     license = section.get(item)
-    day_levels = params.get("day_levels", None)
 
     if not license:
         yield Result(state=State.UNKNOWN, summary=item)
         return
+
+    day_levels = params.get("day_levels", None)
 
     if item == "antivirus":
         if license.status == "licensed":
@@ -349,12 +380,18 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
         )
 
     elif item == "forticare":
-        if license.status == "registered" and license.support.enhanced.status == "licensed":
+        enhanced = license.support.enhanced if license.support else None
+
+        if enhanced is None:
+            yield Result(state=State.WARN, summary=license.summary, details=license.details)
+            return
+
+        if license.status == "registered" and enhanced.status == "licensed":
             yield Result(state=State.OK, summary=license.summary, details=license.details)
 
-        if str(license.support.enhanced.expires).isdigit():
+        if str(enhanced.expires).isdigit():
             yield from check_levels(
-                value=convert_number_of_days(license.support.enhanced.expires),
+                value=convert_number_of_days(enhanced.expires),
                 label="Forticare licenses expires in number of days",
                 metric_name="forticare_license",
                 levels_lower=day_levels,
@@ -362,7 +399,7 @@ def check_fortios_license(item: str, params: Mapping[str, Any], section: Mapping
             )
         yield Metric(
             "expires",
-            convert_number_of_days(license.support.enhanced.expires),
+            convert_number_of_days(enhanced.expires),
             levels=day_levels[1],
         )
 
