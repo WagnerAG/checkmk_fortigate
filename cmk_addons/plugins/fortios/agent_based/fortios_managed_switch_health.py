@@ -66,7 +66,7 @@ class POE(BaseModel):
 
 
 class SummaryEntry(BaseModel):
-    value: float | str | None = None
+    value: int | float | str | None = None
     rating: str
 
 
