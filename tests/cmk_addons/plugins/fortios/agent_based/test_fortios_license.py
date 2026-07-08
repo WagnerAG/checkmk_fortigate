@@ -538,7 +538,7 @@ def test_check_fortios_license_fortiguard(params: dict, section: dict, expected_
                 ),
             },
             (
-                Result(state=State.OK, summary="Account: test@test.com, Status: registered, Expires: 2 years 284 days", details="Support Enhanced: licensed expires in: 1014.0 days, Support Hardware: N/A - virtual platform expires in: N/A)"),
+                Result(state=State.OK, summary="Account: test@test.com, Status: registered, Expires: 2 years 284 days", details="Support Enhanced: licensed expires in: 1014.0 days, Hardware support: licensed expires in: 2 years 284 days)"),
                 Result(state=State.OK, summary="Forticare licenses expires in number of days: 1014 days"),
                 Metric("forticare_license", 1014.0),
                 Metric("expires", 1014.0, levels=(45, 30)),

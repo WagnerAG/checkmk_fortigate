@@ -18,6 +18,7 @@
 from typing import Mapping
 
 import pytest
+from datetime import datetime, timedelta, timezone
 from cmk.agent_based.v2 import Metric, Result, Service, State
 
 from cmk_addons.plugins.fortios.agent_based.fortios_certificates import (
@@ -220,27 +221,28 @@ def test_check_fortios_certificates_filters_source_and_ca() -> None:
 
 
 def test_check_fortios_certificates_groups_details_by_state() -> None:
+    now = datetime.now(timezone.utc)
     section = CertificateSet(
         certificates=[
             Certificate(
                 name="expired-demo-cert",
                 source="user",
                 is_ca=False,
-                valid_to=1724371199,
+                valid_to=int((now - timedelta(days=100)).timestamp()),
                 exists=True,
             ),
             Certificate(
                 name="warning-demo-cert",
                 source="user",
                 is_ca=False,
-                valid_to=1824471520,
+                valid_to=int((now + timedelta(days=750)).timestamp()),
                 exists=True,
             ),
             Certificate(
                 name="ok-demo-cert",
                 source="user",
                 is_ca=False,
-                valid_to=2007640248,
+                valid_to=int((now + timedelta(days=2600)).timestamp()),
                 exists=True,
             ),
         ]

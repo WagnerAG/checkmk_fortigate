@@ -1,8 +1,8 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/ubuntu/.devcontainer/base.Dockerfile
 
-ARG VARIANT="2.5.0-latest"
+ARG VARIANT="2.4.0-latest"
 
-FROM checkmk/check-mk-ultimate:${VARIANT}
+FROM checkmk/check-mk-cloud:${VARIANT}
 
 RUN /docker-entrypoint.sh /bin/true
 

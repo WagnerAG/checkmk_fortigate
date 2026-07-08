@@ -139,7 +139,8 @@ def parse_fortios_dhcp_scope(string_table) -> Mapping[str, DhcpServer] | None:
     except (ValueError, IndexError):
         return None
 
-    if (forti_dhcp_scope := json_data.get("results")) in ({}, []):
+    forti_dhcp_scope = json_data.get("results")
+    if not forti_dhcp_scope:
         return None
 
     return {str(ipaddress.IPv4Network(f"{item['default_gateway']}/{item['netmask']}", strict=False)): DhcpServer(**item) for item in forti_dhcp_scope}
@@ -152,6 +153,8 @@ agent_section_fortios_dhcp_scope = AgentSection(
 
 
 def discovery_fortios_dhcp_scope(section_fortios_dhcp_scope, section_fortios_dhcp_lease) -> DiscoveryResult:
+    if not section_fortios_dhcp_scope:
+        return
     for item in section_fortios_dhcp_scope:
         yield Service(item=item)
 

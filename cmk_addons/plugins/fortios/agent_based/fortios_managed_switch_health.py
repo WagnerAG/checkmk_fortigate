@@ -39,6 +39,7 @@ class PerformanceStatus(BaseModel):
     cpu: CPU
     memory: Memory
     uptime: Uptime
+    network: dict | None = None  # 7.4+ only, not used in checks
 
 
 class CPU(BaseModel):
@@ -64,18 +65,53 @@ class POE(BaseModel):
     value: float
 
 
+class SummaryEntry(BaseModel):
+    value: int | float | str | None = None
+    rating: str
+
+
+class FanSpeed(BaseModel):
+    value: float
+    unit: str
+
+
+class FanSummaryEntry(BaseModel):
+    value: str | None = None
+    rating: str
+    fan_speed: FanSpeed | None = None
+
+
+class Summary(BaseModel):
+    overall: str | None = None
+    cpu: SummaryEntry | None = None
+    memory: SummaryEntry | None = None
+    temperature: SummaryEntry | None = None
+    poe: SummaryEntry | None = None
+    uptime: SummaryEntry | None = None
+    fan: dict[str, FanSummaryEntry] | None = None
+    psu: dict[str, SummaryEntry] | None = None
+
+
 class FortiosSwitchData(BaseModel):
-    performance_status: PerformanceStatus
+    # FortiOS 7.4+: field is "performance" (new health-status endpoint)
+    performance: PerformanceStatus | None = None
+    # FortiOS 7.2: field is "performance-status" → after replace_hyphens: "performance_status"
+    performance_status: PerformanceStatus | None = None
     poe: POE
+    summary: Summary | None = None
+
+    @property
+    def perf(self) -> PerformanceStatus:
+        return self.performance or self.performance_status
 
     @property
     def cpu_summary(self):
-        total_cpu = 100 - self.performance_status.cpu.idle.value
-        return f"Total CPU: {total_cpu}%, nice: {self.performance_status.cpu.nice.value}%, system: {self.performance_status.cpu.system.value}%, user: {self.performance_status.cpu.user.value}%"
+        total_cpu = 100 - self.perf.cpu.idle.value
+        return f"Total CPU: {total_cpu}%, nice: {self.perf.cpu.nice.value}%, system: {self.perf.cpu.system.value}%, user: {self.perf.cpu.user.value}%"
 
     @property
     def memory_summary(self):
-        return f"Total Memory: {self.performance_status.memory.used.value}%"
+        return f"Total Memory: {self.perf.memory.used.value}%"
 
     @property
     def poe_summary(self):
@@ -86,13 +122,13 @@ class FortiosSwitchData(BaseModel):
 
     @property
     def uptime_summary(self):
-        return f"Uptime: {self.performance_status.uptime.days.value} days, {self.performance_status.uptime.hours.value} hours, {self.performance_status.uptime.minutes.value} minutes"
+        return f"Uptime: {self.perf.uptime.days.value} days, {self.perf.uptime.hours.value} hours, {self.perf.uptime.minutes.value} minutes"
 
     @property
     def get_uptime_in_sec(self):
-        minutes = self.performance_status.uptime.minutes.value * 60
-        hours = self.performance_status.uptime.hours.value * 60 * 60
-        days = self.performance_status.uptime.days.value * 60 * 60 * 24
+        minutes = self.perf.uptime.minutes.value * 60
+        hours = self.perf.uptime.hours.value * 60 * 60
+        days = self.perf.uptime.days.value * 60 * 60 * 24
 
         return minutes + hours + days
 
