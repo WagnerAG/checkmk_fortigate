@@ -9,8 +9,8 @@
 
 ### 🔄 Changed
 - Due to compatibility issues, this project maintains two separate release tracks:
-    - CheckMK 2.4.x → main branch → FortiOS Plugin name: v2.4.x
-    - CheckMK 2.5.x → dedicated 2.5.x branch → FortiOS Plugin name: v2.5.x
+    - CheckMK 2.5.x → main branch → FortiOS Plugin name: v2.5.x
+    - CheckMK 2.4.x → dedicated 2.4.x branch → FortiOS Plugin name: v2.4.x
 - Declare Checkmk 2.5 release-line compatibility (`version.min_required` set to `2.5.0p1` and `version.usable_until` set to `2.6.0b1`)
 - Change View Import for Fortios Devices View
 - Change Devcontainer to use Checkmk 2.5.x Pro
