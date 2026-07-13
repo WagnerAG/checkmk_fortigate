@@ -20,6 +20,7 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 
 """
 
+from cmk.ccc.user import UserId
 from cmk.gui.i18n import _l
 from cmk.gui.type_defs import (
     ColumnSpec,
@@ -27,11 +28,10 @@ from cmk.gui.type_defs import (
     VisualLinkSpec,
 )
 from cmk.gui.views.store import multisite_builtin_views
-from cmk.utils.user import UserId
 
 multisite_builtin_views.update(
     {
-        "inv_fortios_devices": {
+        "inv_fortios_devices": {  # type: ignore[misc]
             "link_from": {},
             "packaged": False,
             "single_infos": [],
