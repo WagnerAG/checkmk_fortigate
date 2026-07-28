@@ -5,8 +5,11 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
-## [2.5.0] - 2026-07-08
+## [2.5.1] - 2026-07-28
+### 🐛 Fixed
+- Fixed inventory gui config, thanks to @FabianBinder for the work
 
+## [2.5.0] - 2026-07-08
 ### 🔄 Changed
 - Due to compatibility issues, this project maintains two separate release tracks:
     - CheckMK 2.5.x → main branch → FortiOS Plugin name: v2.5.x
