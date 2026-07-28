@@ -111,7 +111,7 @@ multisite_builtin_views.update(
                 "has_inv": {"is_has_inv": "1"},
             },
             "owner": UserId.builtin(),
-            "megamenu_search_terms": [],
+            "main_menu_search_terms": [],
         },
     }
 )
