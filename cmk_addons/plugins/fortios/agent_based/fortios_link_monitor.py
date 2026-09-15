@@ -27,8 +27,6 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping
 
-from pydantic import BaseModel
-
 from cmk.agent_based.v2 import (
     AgentSection,
     CheckPlugin,
@@ -41,6 +39,7 @@ from cmk.agent_based.v2 import (
     check_levels,
     render,
 )
+from pydantic import BaseModel
 
 
 class LinkMonitor(BaseModel):
@@ -196,7 +195,7 @@ def check_fortios_link_monitor(item: str, params: Mapping[str, Any], section: Ma
         return
 
     if link_monitor.is_disabled:
-        state = State.OK
+        state = State(params.get("state_disabled", State.WARN.value))
     elif link_monitor.is_alive:
         state = State.OK
     else:

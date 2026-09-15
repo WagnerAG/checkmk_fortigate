@@ -59,6 +59,13 @@ def _form_check_fortios_link_monitor() -> Dictionary:
                     prefill=DefaultValue(ServiceState.CRIT),
                 ),
             ),
+            "state_disabled": DictElement(
+                parameter_form=ServiceState(
+                    title=Title("State if the link monitor is disabled"),
+                    help_text=Help("Monitoring state that is reported if the link monitor is disabled"),
+                    prefill=DefaultValue(ServiceState.WARN),
+                ),
+            ),
         },
     )
 
