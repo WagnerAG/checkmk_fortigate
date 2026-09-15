@@ -5,6 +5,10 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
+## [2.5.2] - 2026-09-15
+### 🚀 Added
+- LinkMonitor: Add Plugin for SD-WAN Monitoring. Thanks a lot for the contribution on this UMB AG.
+
 ## [2.5.1] - 2026-07-28
 ### 🐛 Fixed
 - Fixed inventory gui config, thanks to @FabianBinder for the work
