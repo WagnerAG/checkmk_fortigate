@@ -10,6 +10,9 @@
 ### 🚀 Added
 - LinkMonitor: Add Plugin for SD-WAN Monitoring. Thanks a lot for the contribution on this UMB AG.
 
+### 🐛 Fixed
+- Fixed dhcp_scope check by removing the attributes of the pydantic models to a minimum.
+
 ## [2.5.1] - 2026-07-28
 ### 🐛 Fixed
 - Fixed inventory gui config, thanks to @FabianBinder for the work
