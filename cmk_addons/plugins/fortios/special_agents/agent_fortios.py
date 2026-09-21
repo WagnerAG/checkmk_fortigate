@@ -183,6 +183,14 @@ _SECTIONS = [
         path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true",
         min_version=_REST_VERSION,
     ),
+    _SectionSpec(
+        # SD-WAN performance SLA / health-checks (formerly "virtual-wan-link"), not to be
+        # confused with the classic "config system link-monitor" dead-gateway detection,
+        # which is exposed under a different endpoint and not covered here.
+        name="link_monitor",
+        path="monitor/virtual-wan/health-check?vdom=*",
+        min_version=_REST_VERSION,
+    ),
 ]
 
 
