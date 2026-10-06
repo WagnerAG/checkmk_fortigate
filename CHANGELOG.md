@@ -8,7 +8,10 @@
 
 ## [2.5.2] - 2026-09-15
 ### 🚀 Added
-- LinkMonitor: Add Plugin for SD-WAN Monitoring. Thanks a lot for the contribution on this UMB AG.
+- LinkMonitor: Add Plugin to monitor SD-WAN links.
+- HA Statistics: Add Plugins to monitor HA Statistics. 
+- Add feature to disable firmware monitoring
+Thanks a lot for the contribution on this UMB AG.
 
 ## [2.5.1] - 2026-07-28
 ### 🐛 Fixed

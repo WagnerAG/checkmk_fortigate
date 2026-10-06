@@ -15,16 +15,7 @@
 # Developer: opensource@wagner.ch
 
 from cmk.rulesets.v1 import Help, Label, Title
-from cmk.rulesets.v1.form_specs import (
-    BooleanChoice,
-    DefaultValue,
-    DictElement,
-    Dictionary,
-    Integer,
-    Password,
-    migrate_to_password,
-    validators,
-)
+from cmk.rulesets.v1.form_specs import BooleanChoice, DefaultValue, DictElement, Dictionary, Integer, Password, migrate_to_password, validators
 from cmk.rulesets.v1.rule_specs import SpecialAgent, Topic
 
 
@@ -95,6 +86,14 @@ def _valuespec_special_agents_fortios() -> Dictionary:
                     help_text=Help("If enabled, the firmware check returns OK when updates exist only on a different branch and all of them are marked as non-mature/immature."),
                     prefill=DefaultValue(False),
                     label=Label("enabled"),
+                ),
+            ),
+            "disable_firmware": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Firmware: disable section"),
+                    help_text=Help("If enabled, the firmware section is not requested from the device and no firmware check is created."),
+                    prefill=DefaultValue(False),
+                    label=Label("disabled"),
                 ),
             ),
         },

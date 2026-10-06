@@ -40,6 +40,9 @@ class Params(BaseModel):
     retries: int | None = None
     timeout: int | None = None
     debug: bool | None = None
+    branch_change_critical: bool | None = None
+    ok_if_unmatured_branch: bool | None = None
+    disable_firmware: bool | None = None
 
 
 def _agent_fortios_arguments(params: Params, host_config: HostConfig) -> Iterator[SpecialAgentCommand]:
@@ -56,6 +59,12 @@ def _agent_fortios_arguments(params: Params, host_config: HostConfig) -> Iterato
         command_arguments += ["--no-cert-check"]
     if params.debug:
         command_arguments += ["--debug"]
+    if params.branch_change_critical is False:
+        command_arguments += ["--no-branch-change-critical"]
+    if params.ok_if_unmatured_branch:
+        command_arguments += ["--ok-if-unmatured-branch"]
+    if params.disable_firmware:
+        command_arguments += ["--disable-firmware"]
 
     command_arguments.append(host_config.primary_ip_config.address or host_config.name)
     yield SpecialAgentCommand(command_arguments=command_arguments)
