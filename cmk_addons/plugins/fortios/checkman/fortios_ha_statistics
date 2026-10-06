@@ -1,0 +1,28 @@
+title: Fortios: HA statistics
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check shows general statistics for each member of a Fortigate HA
+ cluster individually, complementing the per-node CPU, memory and
+ session checks.
+ It receives the data from the "monitor/system/ha-statistics" API
+ endpoint, which reports statistics per cluster node.
+ One service per cluster node is created, named after the hostname
+ of the respective node (e.g. "HA statistics cust-fwl-001.domain.local").
+
+ The service reports the node's serial number, uptime, total
+ throughput and packet count, as well as network, virus scan and
+ interrupt usage. Per-VDOM CPU, memory and session figures are shown
+ in the service details.
+
+
+ The special agent is required for this check,
+ which can be configured via “FortiOS”.
+
+item:
+ The hostname of the cluster node as reported by the firewall.
+
+discovery:
+ One service per cluster node is created.
