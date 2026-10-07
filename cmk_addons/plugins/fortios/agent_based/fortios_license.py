@@ -30,21 +30,6 @@ from typing import Any, Dict, Mapping, Optional
 from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, HostLabel, HostLabelGenerator, Metric, Result, Service, State, check_levels, render
 from pydantic import BaseModel, field_validator
 
-from cmk.agent_based.v2 import (
-    AgentSection,
-    CheckPlugin,
-    CheckResult,
-    DiscoveryResult,
-    HostLabelGenerator,
-    HostLabel,
-    Metric,
-    Result,
-    Service,
-    State,
-    render,
-    check_levels,
-)
-
 DISCOVERY_DEFAULT_PARAMETERS = {
     "features": [
         "fortiguard",
