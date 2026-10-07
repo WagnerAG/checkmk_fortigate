@@ -24,7 +24,7 @@ from cmk.agent_based.v2 import (
     Result,
     State,
 )
-from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, Resource, ResourceResult, Session
+from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample
 from cmk_addons.plugins.fortios.agent_based.fortios_resources_sessions import (
     check_fortios_resources_sessions,
 )
@@ -37,7 +37,7 @@ DEFAULT_SESSION_LEVELS: Dict = {"session_levels": ("fixed", (5000, 10000))}
     [
         (
             DEFAULT_SESSION_LEVELS,
-            (FortiResource(vdoms=[ResourceResult(vdom="root", results=Resource(cpu=25, memory=21, session=Session(current_usage=5000)))], total_cpu=25, total_memory=25, total_sessions=5000)),
+            FortiResource(results=ResourceUsage(cpu=[UsageSample(current=25)], mem=[UsageSample(current=21)], session=[UsageSample(current=5000)])),
             [
                 Result(state=State.OK, summary="Sessions"),
                 Metric("active_sessions", 5000.0, levels=(5000, 10000)),

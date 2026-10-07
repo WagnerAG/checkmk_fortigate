@@ -70,25 +70,22 @@ class FortiIPSec(BaseModel):
     tunnels_total: int = 0
 
     @model_validator(mode="after")
-    @classmethod
-    def count_tunnels_up(cls, model):
-        if model.proxyid:
-            model.tunnels_up = sum(1 for proxy in model.proxyid if proxy.status == "up")
-        return model
+    def count_tunnels_up(self):
+        if self.proxyid:
+            self.tunnels_up = sum(1 for proxy in self.proxyid if proxy.status == "up")
+        return self
 
     @model_validator(mode="after")
-    @classmethod
-    def count_tunnels_down(cls, model):
-        if model.proxyid:
-            model.tunnels_down = sum(1 for proxy in model.proxyid if proxy.status == "down")
-        return model
+    def count_tunnels_down(self):
+        if self.proxyid:
+            self.tunnels_down = sum(1 for proxy in self.proxyid if proxy.status == "down")
+        return self
 
     @model_validator(mode="after")
-    @classmethod
-    def count_tunnels(cls, model):
-        model.tunnels_up = sum(1 for proxy in model.proxyid if proxy.status == "up")
-        model.tunnels_total = len(model.proxyid)
-        return model
+    def count_tunnels(self):
+        self.tunnels_up = sum(1 for proxy in self.proxyid if proxy.status == "up")
+        self.tunnels_total = len(self.proxyid)
+        return self
 
     @property
     def summary(self) -> str:

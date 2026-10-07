@@ -45,13 +45,12 @@ class Uptime(BaseModel):
         return v / 1000 if v is not None else None
 
     @model_validator(mode="after")
-    @classmethod
-    def calculate_uptime(cls, model):
-        if model.utc_last_reboot is not None:
+    def calculate_uptime(self):
+        if self.utc_last_reboot is not None:
             now = time.time()
-            reboot = model.utc_last_reboot
-            model.uptime = int(now - reboot)
-        return model
+            reboot = self.utc_last_reboot
+            self.uptime = int(now - reboot)
+        return self
 
     @property
     def summary(self):

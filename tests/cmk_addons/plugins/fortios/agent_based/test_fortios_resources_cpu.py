@@ -29,9 +29,8 @@ from cmk.agent_based.v2 import (
 )
 from cmk_addons.plugins.fortios.agent_based.fortios_resources import (
     FortiResource,
-    Resource,
-    ResourceResult,
-    Session,
+    ResourceUsage,
+    UsageSample,
 )
 from cmk_addons.plugins.fortios.agent_based.fortios_resources_cpu import (
     check_fortios_resources_cpu,
@@ -46,7 +45,7 @@ DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
     [
         (
             DEFAULT_CPU_LEVELS,
-            (FortiResource(vdoms=[ResourceResult(vdom="root", results=Resource(cpu=25, memory=21, session=Session(current_usage=5000)))], total_cpu=25, total_memory=25, total_sessions=5000)),
+            FortiResource(results=ResourceUsage(cpu=[UsageSample(current=25)], mem=[UsageSample(current=21)], session=[UsageSample(current=5000)])),
             [
                 Result(state=State.OK, summary="Total usage"),
                 Metric("util", 25.0, levels=(80.0, 90.0), boundaries=(0.0, 100.0)),

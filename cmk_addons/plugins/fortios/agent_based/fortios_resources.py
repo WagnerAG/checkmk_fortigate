@@ -44,12 +44,11 @@ class FortiResource(BaseModel):
     total_sessions: Optional[int] = 0
 
     @model_validator(mode="after")
-    @classmethod
-    def calculate_totals(cls, model):
-        model.total_cpu = model.results.cpu[0].current
-        model.total_memory = model.results.mem[0].current
-        model.total_sessions = model.results.session[0].current
-        return model
+    def calculate_totals(self):
+        self.total_cpu = self.results.cpu[0].current
+        self.total_memory = self.results.mem[0].current
+        self.total_sessions = self.results.session[0].current
+        return self
 
 
 def parse_fortios_resources(string_table: StringTable) -> FortiResource | None:

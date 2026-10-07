@@ -65,17 +65,16 @@ class SSLVPNData(BaseModel):
     if_out_bps: int = Field(0, alias="if_out_bps")
 
     @model_validator(mode="after")
-    @classmethod
-    def compute_aggregates(cls, model):
-        results = model.results
+    def compute_aggregates(self):
+        results = self.results
 
-        model.total_users = len(results)
-        model.connected_users = ", ".join(result.user_name for result in results)
-        model.total_tunnels = sum(len(result.subsessions) for result in results)
-        model.if_in_bps = sum(subsession.in_bytes for result in results for subsession in result.subsessions)
-        model.if_out_bps = sum(subsession.out_bytes for result in results for subsession in result.subsessions)
+        self.total_users = len(results)
+        self.connected_users = ", ".join(result.user_name for result in results)
+        self.total_tunnels = sum(len(result.subsessions) for result in results)
+        self.if_in_bps = sum(subsession.in_bytes for result in results for subsession in result.subsessions)
+        self.if_out_bps = sum(subsession.out_bytes for result in results for subsession in result.subsessions)
 
-        return model
+        return self
 
     @property
     def summary(self):
