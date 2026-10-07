@@ -534,5 +534,5 @@ def test_check_fortios_managed_switch_interface(item: str, section: str, expecte
         timestamp = int((datetime.now() - timedelta(minutes=2)).timestamp())
         mock_get.return_value = {"rx_bytes": (timestamp, 0), "tx_bytes": (timestamp, 0)}
         result = list(check_fortios_switch_interface(item, section))
-        for res, expected_res in zip(result, expected_check_result):
+        for res, expected_res in zip(result, expected_check_result, strict=False):
             assert res == expected_res

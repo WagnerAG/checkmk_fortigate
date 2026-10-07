@@ -31,7 +31,7 @@ from pydantic import BaseModel
 
 from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State, check_levels
 
-DEFAULT_DHCP_LEVELS: Dict = {"dhcp_scope_levels": ("fixed", (80.0, 90.0))}
+DEFAULT_DHCP_LEVELS: Dict = {"dhcp_scope_levels": ("fixed", (80, 90))}
 
 
 class IpRange(BaseModel):
@@ -97,7 +97,7 @@ class DhcpServer(BaseModel):
     timezone: str
     tftp_server: List[str]
     filename: str
-    options: List[str]
+    options: List[dict]
     server_type: str
     ip_mode: str
     conflicted_ip_timeout: int
@@ -139,7 +139,8 @@ def parse_fortios_dhcp_scope(string_table) -> Mapping[str, DhcpServer] | None:
     except (ValueError, IndexError):
         return None
 
-    if (forti_dhcp_scope := json_data.get("results")) in ({}, []):
+    forti_dhcp_scope = json_data.get("results")
+    if not forti_dhcp_scope:
         return None
 
     return {str(ipaddress.IPv4Network(f"{item['default_gateway']}/{item['netmask']}", strict=False)): DhcpServer(**item) for item in forti_dhcp_scope}
@@ -152,6 +153,8 @@ agent_section_fortios_dhcp_scope = AgentSection(
 
 
 def discovery_fortios_dhcp_scope(section_fortios_dhcp_scope, section_fortios_dhcp_lease) -> DiscoveryResult:
+    if not section_fortios_dhcp_scope:
+        return
     for item in section_fortios_dhcp_scope:
         yield Service(item=item)
 

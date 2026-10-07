@@ -15,13 +15,12 @@
 # WAGNER AG
 # Developer: opensource@wagner.ch
 
-from typing import Tuple
-
 import pytest
 
 from cmk.agent_based.v2 import Result, State
 from cmk_addons.plugins.fortios.agent_based.fortios_ha_peer import (
-    Peer,
+    HACluster,
+    HAPeer,
     check_fortios_ha_peer,
     parse_fortios_ha_peer,
 )
@@ -31,46 +30,92 @@ from cmk_addons.plugins.fortios.agent_based.fortios_ha_peer import (
     "string_table, expected_section",
     [
         (
-            [['{"action": "", "build": 1639, "http_method": "GET", "name": "ha-peer", "path": "system", "results": [{"hostname": "ffw01", "priority": 200, "serial_no": "Serial01", "vcluster_id": 0}, {"hostname": "ffw02", "priority": 180, "serial_no": "Serial02", "vcluster_id": 0}], "serial": "Serial00", "status": "success", "vdom": "root", "version": "v7.2.8"}']],
-            [{"ffw01": Peer(serial_no="Serial01", vcluster_id=0, priority=200, hostname="ffw01", status="success"), "ffw02": Peer(serial_no="Serial02", vcluster_id=0, priority=180, hostname="ffw02", status="success")}],
+            [
+                [
+                    '{"build": 3651, "http_method": "GET", "name": "ha-peer", "path": "system", "results": [{"hostname": "firewall01", "master": true, "primary": true, "priority": 100, "serial_no": "Serial01", "vcluster_id": 0}, {"hostname": "firewall02", "priority": 50, "serial_no": "Serial02", "vcluster_id": 0}], "serial": "Serial01", "status": "success", "vdom": "root", "version": "v7.6.5"}'
+                ]
+            ],
+            HACluster(
+                peers=[
+                    HAPeer(
+                        hostname="firewall01",
+                        master=True,
+                        primary=True,
+                        priority=100,
+                        serial_no="Serial01",
+                        vcluster_id=0,
+                    ),
+                    HAPeer(
+                        hostname="firewall02",
+                        master=False,
+                        primary=False,
+                        priority=50,
+                        serial_no="Serial02",
+                        vcluster_id=0,
+                    ),
+                ]
+            ),
         ),
     ],
 )
 def test_parse_fortios_ha_peer(string_table, expected_section) -> None:
-    assert parse_fortios_ha_peer(string_table) == expected_section[0]
+    assert parse_fortios_ha_peer(string_table) == expected_section
 
 
 @pytest.mark.parametrize(
     "item, section, expected_check_result",
     [
         (
-            "ffw01",
-            [
-                ({"ffw01": Peer(serial_no="Serial01", vcluster_id=0, priority=200, hostname="ffw01", status="failing")}),
-            ],
-            [
-                (Result(state=State.CRIT, summary="Cluster status: failing, Cluster ID: 0, Priority: 200, Node Serial: Serial01"),),
-            ],
+            "firewall01",
+            HACluster(
+                peers=[
+                    HAPeer(
+                        hostname="firewall01",
+                        master=True,
+                        primary=True,
+                        priority=100,
+                        serial_no="Serial01",
+                        vcluster_id=0,
+                    ),
+                    HAPeer(
+                        hostname="firewall02",
+                        master=False,
+                        primary=False,
+                        priority=50,
+                        serial_no="Serial02",
+                        vcluster_id=0,
+                    ),
+                ]
+            ),
+            Result(
+                state=State.OK,
+                summary=("Primary: firewall01, Node Serial: Serial01, Priority: 100, Cluster ID: 0, Secondary nodes: see details"),
+                details=("Primary: firewall01, Node Serial: Serial01, Priority: 100, Cluster ID: 0\nSecondary: firewall02, Node Serial: Serial02, Priority: 50, Cluster ID: 0"),
+            ),
         ),
         (
-            "ffw01",
-            [
-                ({"ffw01": Peer(serial_no="Serial01", vcluster_id=0, priority=200, hostname="ffw01", status="success")}),
-            ],
-            [
-                (Result(state=State.OK, summary="Cluster status: success, Cluster ID: 0, Priority: 200, Node Serial: Serial01"),),
-            ],
-        ),
-        (
-            "ffw02",
-            [
-                ({"ffw02": Peer(serial_no="Serial02", vcluster_id=0, priority=180, hostname="ffw02", status="success")}),
-            ],
-            [
-                (Result(state=State.OK, summary="Cluster status: success, Cluster ID: 0, Priority: 180, Node Serial: Serial02"),),
-            ],
+            "firewall02",
+            HACluster(
+                peers=[
+                    HAPeer(
+                        hostname="firewall01",
+                        master=True,
+                        primary=True,
+                        priority=100,
+                        serial_no="Serial01",
+                        vcluster_id=0,
+                    ),
+                ],
+            ),
+            Result(
+                state=State.WARN,
+                summary=("Primary: firewall01, Node Serial: Serial01, Priority: 100, Cluster ID: 0, Secondary nodes: not found!"),
+                details=("Primary: firewall01, Node Serial: Serial01, Priority: 100, Cluster ID: 0"),
+            ),
         ),
     ],
 )
-def test_check_fortios_ha_peer_item(item: str, section: str, expected_check_result: Tuple) -> None:
-    assert tuple(check_fortios_ha_peer(item, section[0])) == expected_check_result[0]
+def test_check_fortios_ha_peer(item: str, section: HACluster, expected_check_result: Result) -> None:
+    results = tuple(check_fortios_ha_peer(item, section))
+    assert len(results) == 1
+    assert results[0] == expected_check_result

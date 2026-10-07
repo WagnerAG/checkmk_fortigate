@@ -1,0 +1,23 @@
+title: Fortios: Managed switch health summary
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the overall health summary of connected switches of a Fortigate firewall.
+ It evaluates the rating of each component reported by the FortiOS health-status API endpoint,
+ including CPU, Memory, Temperature, PoE, Fan(s) and PSU(s).
+
+ The check state is derived from the worst component rating:
+ "good" results in OK, "warning" in WARN, any other value (e.g. "critical") in CRIT.
+
+ This check is only available on FortiOS 7.4 and later, as the health-status API endpoint
+ providing the summary data was introduced in that version.
+
+ This check receives its data via a piggyback mechanism.
+
+ The special agent is required for this check,
+ which can be configured via "FortiOS".
+
+discovery:
+ One service per switch is created, provided summary data is available (FortiOS 7.4+).

@@ -22,8 +22,8 @@ from cmk.rulesets.v1.form_specs import (
     Dictionary,
     Integer,
     Password,
-    validators,
     migrate_to_password,
+    validators,
 )
 from cmk.rulesets.v1.rule_specs import SpecialAgent, Topic
 
@@ -78,6 +78,22 @@ def _valuespec_special_agents_fortios() -> Dictionary:
             "debug": DictElement(
                 parameter_form=BooleanChoice(
                     title=Title("Debug mode"),
+                    label=Label("enabled"),
+                ),
+            ),
+            "branch_change_critical": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Firmware: branch change is CRITICAL"),
+                    help_text=Help("If an update is only available by changing the FortiOS branch (e.g. 7.2 -> 7.4), consider this CRITICAL. If disabled, such updates are reported as WARNING."),
+                    prefill=DefaultValue(True),
+                    label=Label("enabled"),
+                ),
+            ),
+            "ok_if_unmatured_branch": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Firmware: OK if only immature branch updates exist"),
+                    help_text=Help("If enabled, the firmware check returns OK when updates exist only on a different branch and all of them are marked as non-mature/immature."),
+                    prefill=DefaultValue(False),
                     label=Label("enabled"),
                 ),
             ),

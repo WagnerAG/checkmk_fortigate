@@ -5,107 +5,77 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
-## [2.4.0] - 2026-10-06
+
+## [2.4.1] - 2026-10-06
 This release is a backport of the latest CheckMK 2.5 release. It includes all the features and bug fixes for CheckMK 2.3+. 
 
-## [2.0.0] - 2025-08-25
-This marks the first release with official support for CheckMK 2.4.x.
-### 🔄 Changed
-- 🛠️ **Breaking Changes**<br>
-This update introduces changes that are not compatible with existing configurations.<br>
-Important: All breaking changes will require a reconfiguration of your existing rules.<br>
-Make sure to document your current setup before updating the plugin, as previous configurations may no longer be supported or interpreted correctly after the update.
-  - Special agent configuration:
-    - SSL verification is now boolean
-    - API keys are now stored in encrypted form
-    - Specifying the IP address is no longer required
-  - Fortigate interfaces:
-    - new discovery rule:
-      - include or exclude interfaces from monitoring based on their description, name or alias
-  - Switch interfaces
-    - new discovery rule:
-      - include or exclude interfaces from monitoring based on their description
-      - option to discover only switchports with a description
-        - the rule to exclude interfaces by description still applies
-
-- All WATO rules have been migrated to use the new API, polished help text
-- Adjusted all pytests
-- Fortigate interfaces are only discovered if their state is "up"
-- Renamed parameter in DHCP scope usage levels rule to `FortiOS DHCP scope name`
-- NTP default paramters for stratum changed to 8 (`WARN`) and 12 (`CRIT`)
-- Forti AP check now uses built-in metrics for CPU and memory
-- Migrated all Pydantic models to Pydantic V2
-
+## [2.4.0] - 2026-06-26
 ### 🚀 Added
-- The view under "Inventory → FortiOS devices"
-  - now supports searching by serial number
-  - contains an EOS column for FortiSwitches and FortiAPs
-
-### 🐛 Fixed
-- NTP check is more reliable
-- License check is more reliable
-- Various small improvements
-
-## [1.2.0] - 2025-07-29
-
-### 🚀 Added
-- Boilerplate for newer CheckMK versions
-- Special agent contribution from Checkmk Forum https://forum.checkmk.com/t/fortigate-special-agent/47573/19 user 'bitwiz' many thanks!
-- Merged all changes from CheckMK 2.2 FortiOS release `1.0.3`
+- FortiSwitches: added Health Summary check evaluating component ratings (CPU, Memory, Temperature, PoE, Fan, PSU) from the new API endpoint; requires FortiOS 7.4+
 
 ### 🔄 Changed
-- Removed temporary predictive session monitoring
-- Migrated all Pydantic models to Pydantic V2
+- Due to compatibility issues, this project maintains two separate release tracks:
+    - CheckMK 2.4.x → main branch → FortiOS Plugin name: v2.4.x
+    - CheckMK 2.5.x → dedicated 2.5.x branch → FortiOS Plugin name: v2.5.x
+- Declare Checkmk 2.4 release-line compatibility (`version.usable_until` set to `2.4.99`)
+- Improved error handling in special agent for switches and authentication errors (issue [#24](https://github.com/WagnerAG/checkmk_fortigate/issues/24))
 
 ### 🐛 Fixed
-- Various small improvements
-- Improved and fixed Pytests for new pydantic models and CheckMK 2.3
-- From https://github.com/sva-mh/checkmk_fortigate/tree/23_fixes GitHub Repo to improve the compatibility and stability many thanks!
-
-## [1.1.0] - 2024-11-11
-
-### 🚀 Added
-- Introduction of predictive session monitoring
-
-### 🔄 Changed
-- Use builtin ruleset for cpu check
-- Use builtin ruleset for memory check
-
-### 🐛 Fixed
-- Improved special agent if switches are not connected, ignore them
-- Ignore trunk ports, because they have no counters as normal interfaces
-- Added fortios_interface_cmdb to the package
-- Various small improvements
-
----
-
-
-## [1.0.4] - 2025-07-28
-
-### 🔄 Changed
-- Better error handling for special agent crontributed by `bitwiz`
-- Improved GitHub Actions
-
----
-
-## [1.0.3] - 2025-07-21
-
-### 🐛 Fixed
-- Improved special agent for Fortigate 7.2 and 7.4 (Switch interfaces)
-- Compatibility for CMK 2.2.x
-- Wrong imports at `FortiOS devices` view
-- Fortigate:
-    - interface discovery should work even if a non-existent interface pattern is given in the exclusion list
-    - interfaces display `CRIT` state if they go down
 - FortiSwitches:
-    - interfaces display `CRIT` state if they go down
-    - added option to inventorize only active interfaces
-        - __Note:__ if a interface description matches, the interface will be added even the state is `down`
-- License check is more stable now
+  - adopted CPU, Memory, PoE, Health and Uptime checks for new API endpoint (health-status)
+  - maintains backward compatibility with FortiOS 7.2
+- Improved error handling in dhcp check (issue [#](https://github.com/WagnerAG/checkmk_fortigate/issues/15))
+- Fix wrong import for fortios_inventory (issue [#](https://github.com/WagnerAG/checkmk_fortigate/issues/33))
+  - Note: Due to API changes introduced by Fortinet between versions 7.4 and 7.6, the Inventory view is fully supported only on FortiOS 7.6. On FortiOS 7.4, some information may be unavailable
+- prevent crashes on unlicensed hardware and improve license check robustness
 
----
+## [2.0.4] - 2026-05-06
+### 🚀 Added
+- New check to monitor certificate expiration
 
-=======
+### 🔄 Changed
+- Declare Checkmk 2.5 release-line compatibility (`version.usable_until` set to `2.5.99`).
+- Update development and CI container images to Checkmk 2.5 image names.
+
+### 🐛 Fixed
+- Fix FortiOS inventory GUI view loading on Checkmk 2.5 by importing `UserId` from `cmk.ccc.user`.
+- Fix FortiOS inventory view metadata for Checkmk 2.5 by using `main_menu_search_terms`.
+
+## [2.0.3] - 2026-03-31
+### 🚀 Added
+- Implemented firmware checks (separate services for Model and Serial Number) from @realarna
+ https://github.com/realarna/CheckMK_Fortigate_API_Monitoring
+
+### 🐛 Fixed
+- Issue with managed switch checks: The check crashes when switches are disconnected
+- Fix DHCP scope check issue with datatype
+
+## [2.0.2] - 2026-03-14
+### 🐛 Fixed
+- Fix DHCP scope check issue with datatype
+
+### 🔄 Changed
+- Breaking Change: Add VDOM functionality to IPSec Check, the service name changes and contains now the VDOM name.
+
+## [2.0.1] - 2026-01-12
+### 🔄 Changed
+- License Check
+  - Treat `no_license` antivirus state as `OK` during inventory
+- HA Peer check refactored
+  - only one service will be created (run service discovery!)
+  - if no secondary information is found, state will become `WARN`
+- Readme updated
+
+### 🚀 Added
+- Switch port discovery
+ - add option to inventorize only interfaces with a matching description
+- New `IPSec Client VPN <name>` check. The service is inventoried only when users are connected. Its state is always reported as `OK` and displays the currently connected users.
+ - can be disabled &rarr; create discovery rule `FortiOS IPSec Client VPN discovery`
+
+### 🐛 Fixed
+- WiFi AP Check
+  - fix crash if WiFi AP has no IP address
+- Added dedicated rule for memory check (issue [#17](https://github.com/WagnerAG/checkmk_fortigate/issues/17))
 
 ## [1.0.0] - 2024-09-12
 

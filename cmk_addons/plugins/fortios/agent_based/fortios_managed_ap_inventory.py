@@ -49,7 +49,7 @@ def inventory_fortios_managed_ap(section: AccessPoint) -> InventoryResult:
 
         path = ["networking", "fortios", "wifi", "accesspoints"]
         model, version, build = model_version_build(v.os_version)
-        yield TableRow(path=path, key_columns={"name": v.name}, inventory_columns={"ip_address": v.local_ipv4_addr, "serial_number": v.serial, "model": model, "version": version, "build": build, "end_of_support": "False" if not v.eos else "True"})
+        yield TableRow(path=path, key_columns={"name": v.name}, inventory_columns={"ip_address": v.local_addr, "serial_number": v.serial, "model": model, "version": version, "build": build, "end_of_support": "False" if not v.eos else "True"})
 
         path = [
             "networking",

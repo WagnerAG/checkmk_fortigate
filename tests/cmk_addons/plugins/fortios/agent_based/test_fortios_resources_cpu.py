@@ -37,7 +37,7 @@ from cmk_addons.plugins.fortios.agent_based.fortios_resources_cpu import (
     check_fortios_resources_cpu,
 )
 
-DEFAULT_CPU_LEVELS: Dict = {"util": ("fixed", (80, 90))}
+DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 
 
 # Test data for check_fortios_resources_cpu

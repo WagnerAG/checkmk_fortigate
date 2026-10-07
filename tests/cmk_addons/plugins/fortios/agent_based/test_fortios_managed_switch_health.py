@@ -25,7 +25,8 @@ from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_health import
 
 
 @pytest.fixture
-def valid_json():
+def valid_json_legacy():
+    """FortiOS 7.2 format: field name is 'performance-status'"""
     return """{
         "performance-status": {
             "cpu": {
@@ -49,6 +50,47 @@ def valid_json():
     }"""
 
 
+@pytest.fixture
+def valid_json_new():
+    """FortiOS 7.4+ format: field name is 'performance', includes extra fields"""
+    return """{
+        "serial": "FSWTESTSERIAL001",
+        "switch-id": "FSWTESTSERIAL001",
+        "performance": {
+            "cpu": {
+                "idle": {"unit": "%", "value": 86},
+                "nice": {"unit": "%", "value": 0},
+                "system": {"unit": "%", "value": 13},
+                "user": {"unit": "%", "value": 1}
+            },
+            "memory": {"used": {"unit": "%", "value": 36}},
+            "network": {
+                "in-1min": {"unit": "kbps", "value": 0},
+                "in-10min": {"unit": "kbps", "value": 0},
+                "in-30min": {"unit": "kbps", "value": 0}
+            },
+            "uptime": {
+                "days": {"unit": "days", "value": 109},
+                "hours": {"unit": "hours", "value": 17},
+                "minutes": {"unit": "minutes", "value": 3}
+            }
+        },
+        "poe": {
+            "max_value": 800,
+            "unit": "watts",
+            "value": 25.9
+        },
+        "fan": [],
+        "psu": []
+    }"""
+
+
+# keep old fixture name as alias so parametrized tests still work
+@pytest.fixture
+def valid_json(valid_json_legacy):
+    return valid_json_legacy
+
+
 def test_replace_hyphens():
     input_data = {
         "performance-status": {
@@ -67,12 +109,20 @@ def test_replace_hyphens():
     assert replace_hyphens(input_data) == expected_output
 
 
-def test_parse_fortios_managed_switch_health(valid_json):
-    string_table = [[valid_json]]
-    parsed_data = parse_fortios_managed_switch_health(string_table)
+def test_parse_fortios_managed_switch_health_legacy(valid_json_legacy):
+    parsed_data = parse_fortios_managed_switch_health([[valid_json_legacy]])
     assert isinstance(parsed_data, FortiosSwitchData)
-    assert parsed_data.performance_status.cpu.idle.value == 86
-    assert parsed_data.performance_status.memory.used.value == 36
+    assert parsed_data.perf.cpu.idle.value == 86
+    assert parsed_data.perf.memory.used.value == 36
+    assert parsed_data.poe.max_value == 800
+    assert parsed_data.poe.value == 25.9
+
+
+def test_parse_fortios_managed_switch_health_new(valid_json_new):
+    parsed_data = parse_fortios_managed_switch_health([[valid_json_new]])
+    assert isinstance(parsed_data, FortiosSwitchData)
+    assert parsed_data.perf.cpu.idle.value == 86
+    assert parsed_data.perf.memory.used.value == 36
     assert parsed_data.poe.max_value == 800
     assert parsed_data.poe.value == 25.9
 
