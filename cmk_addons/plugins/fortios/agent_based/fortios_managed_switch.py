@@ -25,8 +25,7 @@ from __future__ import annotations
 import json
 from typing import Mapping, Optional
 
-from cmk.agent_based.v2 import CheckPlugin, AgentSection, Result, Service, State, CheckResult, DiscoveryResult
-
+from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, Result, Service, State
 from pydantic import BaseModel
 
 
@@ -36,8 +35,8 @@ class Switch(BaseModel, frozen=True):
     serial: str
     state: str
     fgt_peer_intf_name: str
-    connecting_from: Optional[str]
-    join_time: str
+    connecting_from: Optional[str] = "Not connected"
+    join_time: Optional[str] = None
     type: str
     is_l3: bool
     max_poe_budget: int
@@ -45,8 +44,8 @@ class Switch(BaseModel, frozen=True):
     dhcp_snooping_supported: bool
     mc_lag_supported: bool
     led_blink_supported: bool
-    os_version: str
-    eos: Optional[bool]
+    os_version: Optional[str] = None
+    eos: Optional[bool] = None
 
     @property
     def summary(self) -> str:

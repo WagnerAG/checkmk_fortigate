@@ -23,29 +23,22 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 import json
 from typing import List, Optional
 
-
+from cmk.agent_based.v2 import AgentSection, StringTable
 from pydantic import BaseModel, model_validator
 
-from cmk.agent_based.v2 import AgentSection, StringTable
+
+class UsageSample(BaseModel):
+    current: int
 
 
-class Session(BaseModel):
-    current_usage: int
-
-
-class Resource(BaseModel):
-    cpu: int
-    memory: int
-    session: Session
-
-
-class ResourceResult(BaseModel):
-    results: Resource
-    vdom: str
+class ResourceUsage(BaseModel):
+    cpu: List[UsageSample]
+    mem: List[UsageSample]
+    session: List[UsageSample]
 
 
 class FortiResource(BaseModel):
-    vdoms: Optional[List[ResourceResult]] = None
+    results: ResourceUsage
     total_cpu: Optional[int] = 0
     total_memory: Optional[int] = 0
     total_sessions: Optional[int] = 0
@@ -53,9 +46,9 @@ class FortiResource(BaseModel):
     @model_validator(mode="after")
     @classmethod
     def calculate_totals(cls, model):
-        model.total_cpu = sum(vdom.results.cpu for vdom in model.vdoms)
-        model.total_memory = sum(vdom.results.memory for vdom in model.vdoms)
-        model.total_sessions = sum(vdom.results.session.current_usage for vdom in model.vdoms)
+        model.total_cpu = model.results.cpu[0].current
+        model.total_memory = model.results.mem[0].current
+        model.total_sessions = model.results.session[0].current
         return model
 
 
@@ -65,10 +58,10 @@ def parse_fortios_resources(string_table: StringTable) -> FortiResource | None:
     except (ValueError, KeyError):
         return None
 
-    if (forti_resources := json_data) in ({}, []):
+    if not json_data:
         return None
 
-    return FortiResource(vdoms=[ResourceResult(**item) for item in forti_resources])
+    return FortiResource(**json_data)
 
 
 agent_section_fortios_vdom_resources = AgentSection(

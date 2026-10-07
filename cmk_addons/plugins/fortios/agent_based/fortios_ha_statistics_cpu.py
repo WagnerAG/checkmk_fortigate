@@ -28,23 +28,27 @@ from cmk.agent_based.v1 import check_levels
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 from cmk.agent_based.v2.render import percent
 
-from .fortios_resources import FortiResource
+from .fortios_ha_statistics import HAStatistics
 
 DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 
 
-def discovery_fortios_resources_cpu(section: FortiResource) -> DiscoveryResult:
-    yield Service()
+def discovery_fortios_ha_statistics_cpu(section: HAStatistics) -> DiscoveryResult:
+    for node in section.nodes:
+        yield Service(item=node.hostname)
 
 
-def check_fortios_resources_cpu(params: Mapping[str, Any], section: FortiResource) -> CheckResult:
+def check_fortios_ha_statistics_cpu(item: str, params: Mapping[str, Any], section: HAStatistics) -> CheckResult:
+    node = section.node(item)
+    if node is None:
+        yield Result(state=State.UNKNOWN, summary="No data available for this node")
+        return
+
     cpu_levels = params.get("util")
 
-    yield Result(state=State.OK, summary="Total usage")
-
-    yield Metric("util", section.total_cpu, levels=cpu_levels, boundaries=(0, 100))
+    yield Metric("util", node.cpu_usage, levels=cpu_levels, boundaries=(0, 100))
     yield from check_levels(
-        value=section.total_cpu,
+        value=node.cpu_usage,
         label="CPU load",
         metric_name="util",
         levels_upper=cpu_levels,
@@ -53,12 +57,12 @@ def check_fortios_resources_cpu(params: Mapping[str, Any], section: FortiResourc
     )
 
 
-check_plugin_fortios_resources_cpu = CheckPlugin(
-    name="fortios_resources_cpu",
-    service_name="CPU utilization",
-    sections=["fortios_vdom_resources"],
-    discovery_function=discovery_fortios_resources_cpu,
+check_plugin_fortios_ha_statistics_cpu = CheckPlugin(
+    name="fortios_ha_statistics_cpu",
+    service_name="CPU utilization %s",
+    sections=["fortios_ha_statistics"],
+    discovery_function=discovery_fortios_ha_statistics_cpu,
     check_ruleset_name="cpu_utilization",
-    check_function=check_fortios_resources_cpu,
+    check_function=check_fortios_ha_statistics_cpu,
     check_default_parameters=DEFAULT_CPU_LEVELS,
 )

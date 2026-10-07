@@ -5,6 +5,9 @@
 > The format is based on [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
+## [2.4.0] - 2026-10-06
+This release is a backport of the latest CheckMK 2.5 release. It includes all the features and bug fixes for CheckMK 2.3+. 
+
 ## [2.0.0] - 2025-08-25
 This marks the first release with official support for CheckMK 2.4.x.
 ### 🔄 Changed

@@ -1,0 +1,19 @@
+title: Fortios: Certificate Expiry
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check monitors the certificates on a Fortigate.
+ It changes the status to {warn} or {crit} according to day limits configured.
+ Default is {warn} 30 and {crit} 7.
+
+ See details of the service to view all certificates
+
+ Values can be parameterized using a rule. Also, which types of certificate we will monitor.
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created for all certificates.

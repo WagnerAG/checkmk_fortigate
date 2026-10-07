@@ -28,30 +28,9 @@ import time
 from enum import IntEnum
 from typing import Any, Dict, List, Mapping, Optional
 
-from cmk.agent_based.v2 import (
-    AgentSection,
-    CheckPlugin,
-    CheckResult,
-    DiscoveryResult,
-    GetRateError,
-    Metric,
-    Result,
-    Service,
-    State,
-    check_levels,
-    get_rate,
-    get_value_store,
-)
-from cmk.agent_based.v2.render import (
-    networkbandwidth,
-    nicspeed,
-)
-from pydantic import (
-    BaseModel,
-    RootModel,
-    field_validator,
-    model_validator,
-)
+from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, GetRateError, Metric, Result, Service, State, check_levels, get_rate, get_value_store
+from cmk.agent_based.v2.render import networkbandwidth, nicspeed
+from pydantic import BaseModel, RootModel, field_validator, model_validator
 
 
 class Interface(BaseModel):

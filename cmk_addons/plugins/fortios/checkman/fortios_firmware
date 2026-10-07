@@ -1,0 +1,16 @@
+title: Fortios: Firmware
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This monitors for available firmware updates.
+ It changes to {warn} or {crit} if there are pending updates.
+
+ Some settings are configurable in the FortiOS agent.
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created.

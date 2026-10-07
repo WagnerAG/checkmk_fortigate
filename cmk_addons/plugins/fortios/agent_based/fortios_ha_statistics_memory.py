@@ -27,24 +27,27 @@ from typing import Any, Dict, Mapping
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State, check_levels
 from cmk.agent_based.v2.render import percent
 
-from .fortios_resources import FortiResource
+from .fortios_ha_statistics import HAStatistics
 
 DEFAULT_MEMORY_LEVELS: Dict = {"levels": ("fixed", (70.0, 80.0))}
 
 
-def discovery_fortios_resources_memory(section: FortiResource) -> DiscoveryResult:
-    yield Service()
+def discovery_fortios_ha_statistics_memory(section: HAStatistics) -> DiscoveryResult:
+    for node in section.nodes:
+        yield Service(item=node.hostname)
 
 
-def check_fortios_resources_memory(params: Mapping[str, Any], section: FortiResource) -> CheckResult:
+def check_fortios_ha_statistics_memory(item: str, params: Mapping[str, Any], section: HAStatistics) -> CheckResult:
+    node = section.node(item)
+    if node is None:
+        yield Result(state=State.UNKNOWN, summary="No data available for this node")
+        return
+
     memory_levels = params.get("levels")
 
-    yield Result(state=State.OK, summary="Total usage")
-
-    yield Metric("memory_util", section.total_memory, levels=memory_levels[1], boundaries=(0, 100))
-
+    yield Metric("memory_util", node.mem_usage, levels=memory_levels[1], boundaries=(0, 100))
     yield from check_levels(
-        value=section.total_memory,
+        value=node.mem_usage,
         metric_name="memory_util",
         levels_upper=memory_levels,
         render_func=percent,
@@ -52,12 +55,12 @@ def check_fortios_resources_memory(params: Mapping[str, Any], section: FortiReso
     )
 
 
-check_plugin_fortios_resources_memory = CheckPlugin(
-    name="fortios_resources_memory",
-    service_name="Memory usage",
-    sections=["fortios_vdom_resources"],
-    discovery_function=discovery_fortios_resources_memory,
+check_plugin_fortios_ha_statistics_memory = CheckPlugin(
+    name="fortios_ha_statistics_memory",
+    service_name="Memory usage %s",
+    sections=["fortios_ha_statistics"],
+    discovery_function=discovery_fortios_ha_statistics_memory,
     check_ruleset_name="fortios_resources_memory",
-    check_function=check_fortios_resources_memory,
+    check_function=check_fortios_ha_statistics_memory,
     check_default_parameters=DEFAULT_MEMORY_LEVELS,
 )

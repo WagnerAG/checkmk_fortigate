@@ -22,8 +22,7 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 
 from __future__ import annotations
 
-
-from cmk.agent_based.v2 import CheckPlugin, Metric, Result, Service, State, CheckResult, DiscoveryResult
+from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 
 
 def discovery_fortios_switch_cpu(section) -> DiscoveryResult:
@@ -32,10 +31,10 @@ def discovery_fortios_switch_cpu(section) -> DiscoveryResult:
 
 def check_fortios_switch_cpu(section: str) -> CheckResult:
     yield Result(state=State.OK, summary=section.cpu_summary)
-    yield Metric("util_average_1", 100 - section.performance_status.cpu.idle.value, boundaries=(0, 100))
-    yield Metric("idle", section.performance_status.cpu.idle.value)
-    yield Metric("user", section.performance_status.cpu.user.value)
-    yield Metric("system", section.performance_status.cpu.system.value)
+    yield Metric("util_average_1", 100 - section.perf.cpu.idle.value, boundaries=(0, 100))
+    yield Metric("idle", section.perf.cpu.idle.value)
+    yield Metric("user", section.perf.cpu.user.value)
+    yield Metric("system", section.perf.cpu.system.value)
 
 
 check_plugin_fortios_managed_switch_cpu = CheckPlugin(

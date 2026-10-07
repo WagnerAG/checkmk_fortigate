@@ -22,23 +22,18 @@ Special agent for monitoring Fortinet Devices with FortiOS via REST API 2.x with
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 import sys
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import requests
 import urllib3
-from requests.adapters import HTTPAdapter
-
-from cmk.special_agents.v0_unstable.agent_common import (
-    ConditionalPiggybackSection,
-    SectionWriter,
-    special_agent_main,
-)
-from cmk.utils import password_store
+from cmk.special_agents.v0_unstable.agent_common import ConditionalPiggybackSection, SectionWriter, special_agent_main
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
+from cmk.utils import password_store
+from requests.adapters import HTTPAdapter
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 _LOGGER = logging.getLogger("agent_fortios")
@@ -89,6 +84,11 @@ _SECTIONS = [
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
+        name="ha_statistics",
+        path="monitor/system/ha-statistics",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
         name="interfaces",
         path="monitor/system/interface?vdom=*&include_aggregate=true&include_vlan=true",
         min_version=_REST_VERSION,
@@ -100,7 +100,7 @@ _SECTIONS = [
     ),
     _SectionSpec(
         name="vdom_resources",
-        path="monitor/system/vdom-resource?vdom=*",
+        path="monitor/system/resource/usage",
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
@@ -111,6 +111,11 @@ _SECTIONS = [
     _SectionSpec(
         name="device_info",
         path="monitor/system/status",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
+        name="firmware",
+        path="monitor/system/firmware",
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
@@ -146,8 +151,15 @@ _SECTIONS = [
     ),
     ### Hangs for longer periods sometime, produces not output
     _SectionSpec(
-        name="managed_switch_health",
+        name="managed_switch_health_legacy",
         path="monitor/switch-controller/managed-switch/health",
+        min_version=_REST_VERSION,
+        piggyback=True,
+        piggyback_section="switch",
+    ),
+    _SectionSpec(
+        name="managed_switch_health",
+        path="monitor/switch-controller/managed-switch/health-status",
         min_version=_REST_VERSION,
         piggyback=True,
         piggyback_section="switch",
@@ -165,6 +177,19 @@ _SECTIONS = [
     _SectionSpec(
         name="dhcp_lease",
         path="monitor/system/dhcp",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
+        name="certificates",
+        path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
+        # SD-WAN performance SLA / health-checks (formerly "virtual-wan-link"), not to be
+        # confused with the classic "config system link-monitor" dead-gateway detection,
+        # which is exposed under a different endpoint and not covered here.
+        name="link_monitor",
+        path="monitor/virtual-wan/health-check?vdom=*",
         min_version=_REST_VERSION,
     ),
 ]
@@ -187,6 +212,40 @@ def parse_arguments(argv: Sequence[str] | None) -> Args:
         "--api-token",
         type=str,
         help=("Generate the API token through the CLI"),
+    )
+    # Firmware monitoring behaviour
+    parser.add_argument(
+        "--branch-change-critical",
+        dest="branch_change_critical",
+        action="store_true",
+        default=True,
+        help="Consider branch change critical (default)",
+    )
+    parser.add_argument(
+        "--no-branch-change-critical",
+        dest="branch_change_critical",
+        action="store_false",
+        help="Do not consider branch change critical",
+    )
+    parser.add_argument(
+        "--ok-if-unmatured-branch",
+        dest="ok_if_unmatured_branch",
+        action="store_true",
+        default=False,
+        help="Return OK when only immature branch upgrades exist",
+    )
+    parser.add_argument(
+        "--no-ok-if-unmatured-branch",
+        dest="ok_if_unmatured_branch",
+        action="store_false",
+        help="Disable OK override for immature branch upgrades",
+    )
+    parser.add_argument(
+        "--disable-firmware",
+        dest="disable_firmware",
+        action="store_true",
+        default=False,
+        help="Do not collect the firmware section",
     )
     parser.add_argument("server", type=str, help="Hostname or IP address")
     return parser.parse_args(argv)
@@ -212,6 +271,39 @@ class JsonConcatenator:
 
     def get_store(self):
         return self.store
+
+
+def _normalize_firmware_payload(payload):
+    """Normalize firmware monitor payload across FortiOS versions.
+
+    Some FortiOS releases wrap data in a "results" object while newer ones may
+    expose "current" / "available" at the top level.
+    """
+
+    if not isinstance(payload, dict):
+        return payload
+
+    normalized = dict(payload)
+    existing_results = normalized.get("results")
+    results = dict(existing_results) if isinstance(existing_results, dict) else {}
+
+    for key in ("current", "running", "installed", "active"):
+        current_obj = normalized.get(key)
+        if isinstance(current_obj, dict) and "current" not in results:
+            results["current"] = current_obj
+            break
+
+    for key in ("available", "images", "upgrades", "upgrade_images", "firmwares"):
+        available_list = normalized.get(key)
+        if isinstance(available_list, list) and "available" not in results:
+            results["available"] = available_list
+            break
+
+    if results:
+        normalized["results"] = results
+
+    normalized.setdefault("status", "success")
+    return normalized
 
 
 class SpecialAgentError(Exception):
@@ -309,6 +401,10 @@ class FortiOS:
             _LOGGER.error(f"Login failed: {e}")
             raise AuthError(f"Login failed {e}") from e
 
+        if section_response.status_code == 401:
+            _LOGGER.error("Authentication failed: invalid API token (HTTP 401)")
+            raise AuthError("Authentication failed: invalid API token (HTTP 401)")
+
         if section_response.status_code == 429:
             _LOGGER.error(f"Collecting section: {spec.name} failed. Reason: HTTP status 429; error: ({section_response.status_code}) {section_response.reason}")
             raise AuthError("IP address blacklisted or too many requests")
@@ -346,7 +442,11 @@ def agent_fortios(args: Args) -> int:
     # initialize value store for switch serial number mapping
     json_store = JsonConcatenator()
 
-    for spec in _filter_applicable_sections(_SECTIONS):
+    sections = _SECTIONS
+    if getattr(args, "disable_firmware", False):
+        sections = [spec for spec in sections if spec.name != "firmware"]
+
+    for spec in _filter_applicable_sections(sections):
         try:
             data = None
             data = fortios.collect_section_data(spec)
@@ -372,6 +472,21 @@ def agent_fortios(args: Args) -> int:
             # data = fortios.collect_section_data(spec) Redundant, already collected above
             json_store.add_json(data, spec.name)
         else:
+            # Firmware payload normalization + inject monitoring configuration flags
+            if spec.name == "firmware" and isinstance(data, dict):
+                data = _normalize_firmware_payload(data)
+                try:
+                    cfg = data.get("config", {}) if isinstance(data.get("config"), dict) else {}
+                    cfg.update(
+                        {
+                            "critical_on_branch_change": bool(getattr(args, "branch_change_critical", True)),
+                            "ok_if_unmatured_branch": bool(getattr(args, "ok_if_unmatured_branch", False)),
+                        }
+                    )
+                    data["config"] = cfg
+                except Exception:
+                    pass
+
             if isinstance(data, list):
                 status_check = data[0]["status"]
             elif isinstance(data, dict):
@@ -386,19 +501,25 @@ def agent_fortios(args: Args) -> int:
 
     # Process piggyback data for switches
     switch_status = json_store.get_value("managed_switch_status")
-    switch_status_data = switch_status.get("results")
+    if not switch_status:
+        _LOGGER.error("managed_switch_status data unavailable, skipping switch piggyback processing")
+        return 0
+    switch_status_data = switch_status.get("results", [])
+
+    switch_health_legacy = json_store.get_value("managed_switch_health_legacy")
+    switch_health_legacy_data = switch_health_legacy.get("results", {}) if switch_health_legacy else {}
 
     switch_health = json_store.get_value("managed_switch_health")
-    if switch_health:
-        switch_health_data = switch_health.get("results")
-    else:
-        switch_health_data = {}
+    switch_health_data = switch_health.get("results", []) if switch_health else []
 
     port_stats = json_store.get_value("managed_switch_port_stats")
-    switch_port_stats = port_stats.get("results")
+    switch_port_stats = port_stats.get("results", []) if port_stats else []
 
     managed_switch = json_store.get_value("managed_switch")
-    switch_data = managed_switch.get("results")
+    if not managed_switch:
+        _LOGGER.error("managed_switch data unavailable, skipping switch piggyback processing")
+        return 0
+    switch_data = managed_switch.get("results", [])
 
     for switch in switch_status_data:
         if switch.get("status") != "Connected":
@@ -415,8 +536,9 @@ def agent_fortios(args: Args) -> int:
 
         # map the switch data to the correct switch
         if "7.2" in managed_switch["version"]:
+            # FortiOS 7.2: health endpoint returns dict keyed by serial
             switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_serial), None)
-            switch_health_data_result = switch_health_data.get(switch.get("serial"))
+            switch_health_data_result = switch_health_legacy_data.get(switch_serial)
 
             with ConditionalPiggybackSection(switch["name"]):
                 with SectionWriter("fortios_managed_switch_interface") as writer:
@@ -424,8 +546,12 @@ def agent_fortios(args: Args) -> int:
                 with SectionWriter("fortios_managed_switch_health") as writer:
                     writer.append_json(switch_health_data_result)
         else:
+            # FortiOS 7.4+: health-status endpoint returns list of objects
             switch_data_result = next((item for item in switch_data if item.get("switch-id") == switch_id), None)
-            switch_health_data_result = switch_health_data.get(switch.get("switch-id"))
+            switch_health_data_result = next(
+                (item for item in switch_health_data if item.get("serial") == switch_serial),
+                None,
+            )
 
             with ConditionalPiggybackSection(switch["switch-id"]):
                 with SectionWriter("fortios_managed_switch_interface") as writer:

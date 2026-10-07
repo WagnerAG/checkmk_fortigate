@@ -22,7 +22,6 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 
 from __future__ import annotations
 
-
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 
 
@@ -32,7 +31,7 @@ def discovery_fortios_switch_memory(section) -> DiscoveryResult:
 
 def check_fortios_switch_memory(section: str) -> CheckResult:
     yield Result(state=State.OK, summary=section.memory_summary)
-    yield Metric("mem_used", section.performance_status.memory.used.value, boundaries=(0, 100))
+    yield Metric("mem_used", section.perf.memory.used.value, boundaries=(0, 100))
 
 
 check_plugin_fortios_managed_switch_memory = CheckPlugin(

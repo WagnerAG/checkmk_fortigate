@@ -1,0 +1,14 @@
+title: Fortios: System
+agents: special
+catalog: network/fortigate
+license: GPLv2
+distribution: check_mk
+description:
+ This check creates a service with Fortigate version and build information.
+ It changes the status to {unknown} if there is no information available.
+
+ The special agent is required for this check, 
+ which can be configured via “FortiOS”.
+
+discovery:
+ One service is created.

@@ -19,8 +19,8 @@ Check_MK WATO rule spec for FortiOS special agent
 
 """
 
-from cmk.rulesets.v1 import Title, Help, Label
-from cmk.rulesets.v1.form_specs import DictElement, Dictionary, BooleanChoice, List, String, validators
+from cmk.rulesets.v1 import Help, Label, Title
+from cmk.rulesets.v1.form_specs import BooleanChoice, DictElement, Dictionary, List, String, validators
 from cmk.rulesets.v1.rule_specs import DiscoveryParameters, Topic
 
 
@@ -36,6 +36,13 @@ def _form_check_fortios_switch_interface_discovery() -> Dictionary:
                         custom_validate=(validators.LengthInRange(min_value=1),),
                     ),
                     editable_order=False,
+                ),
+            ),
+            "item_with_matching_description": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Only discover interfaces with a description matching the include list"),
+                    help_text=Help("If enabled, only interfaces with a description matching the include list will be discovered."),
+                    label=Label("Enable"),
                 ),
             ),
             "item_excluded": DictElement(

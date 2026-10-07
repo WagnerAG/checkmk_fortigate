@@ -26,10 +26,9 @@ import json
 import time
 from typing import List, Mapping, Optional
 
+from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, GetRateError, Metric, Result, Service, State, check_levels, get_rate, get_value_store
 from cmk.agent_based.v2.render import networkbandwidth
 from pydantic import BaseModel
-
-from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, GetRateError, Metric, Result, Service, State, get_rate, get_value_store, check_levels
 
 
 class WiredInterface(BaseModel):
@@ -103,7 +102,7 @@ class AccessPoint(BaseModel):
     status: str
     state: str
     clients: int
-    local_ipv4_addr: str
+    local_addr: Optional[str] = "Unknown"
     board_mac: str
     last_reboot_time: Optional[str] = "Unknown"
     ssid: List[SSIDRadio]
@@ -120,7 +119,7 @@ class AccessPoint(BaseModel):
 
     @property
     def summary_status(self):
-        return f"Status: {self.status}, State: {self.state}, Clients: {self.clients}, IP: {self.local_ipv4_addr}"
+        return f"Status: {self.status}, State: {self.state}, Clients: {self.clients}, IP: {self.local_addr}"
 
     @property
     def details(self):
