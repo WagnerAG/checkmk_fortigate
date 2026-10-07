@@ -1,98 +1,136 @@
-#!/usr/bin/env python3
-# -*- encoding: utf-8; py-indent-offset: 4 -*-
-
-# This is free software;  you can redistribute it and/or modify it
-# under the  terms of the  GNU General Public License  as published by
-# the Free Software Foundation in version 2.  check_mk is  distributed
-# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
-# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
-# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
-# tails. You should have  received  a copy of the  GNU  General Public
-# License along with GNU Make; see the file  COPYING.  If  not,  write
-# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
-# Boston, MA 02110-1301 USA.
-
-# WAGNER AG
-# Developer: opensource@wagner.ch
+import json
 
 import pytest
-from cmk.agent_based.v2 import Metric, Result, Service, State
 
+from cmk.agent_based.v2 import Metric, Result, Service, State
 from cmk_addons.plugins.fortios.agent_based.fortios_firmware import (
-    FirmwareConfig,
     FirmwareImage,
-    FirmwareResults,
     FirmwareSection,
-    _parse_json_section,
     check_fortios_firmware,
     discover_fortios_firmware,
+    _parse_json_section,
 )
+
+
+def _section(current, available=(), **config):
+    return FirmwareSection.model_validate(
+        {
+            "results": {"current": current, "available": list(available)},
+            "config": config,
+        }
+    )
+
+
+def test_parse_fortios_firmware():
+    payload = {
+        "status": "success",
+        "results": {
+            "current": {"version": "v7.2.8", "build": 1639, "major": 7, "minor": 2, "patch": 8, "platform-id": "FGT60F"},
+            "available": [],
+        },
+    }
+
+    parsed = _parse_json_section([[json.dumps(payload)]])
+
+    assert parsed.results.current.platform_id == "FGT60F"
+    assert parsed.results.current.version_tuple == (7, 2, 8, 1639)
+    assert parsed.results.current.build_str == "1639"
+    assert _parse_json_section([]) is None
+    assert _parse_json_section([["invalid JSON"]]).has_error
+
+
+def test_firmware_image_normalizes_optional_values():
+    image = FirmwareImage.model_validate({"platformId": "FGT40F", "maturity": "mature", "build": None})
+
+    assert image.platform_id == "FGT40F"
+    assert image.is_mature
+    assert image.build_str == "Unknown"
+
+
+def test_discover_fortios_firmware():
+    assert list(discover_fortios_firmware(_section({"version": "v7.2.8"}))) == [Service()]
+    assert list(discover_fortios_firmware(None)) == []
+
+
+def test_check_fortios_firmware_without_data():
+    assert list(check_fortios_firmware(None)) == [Result(state=State.UNKNOWN, summary="No firmware data received")]
 
 
 @pytest.mark.parametrize(
-    "string_table, expected_section",
+    "section, expected_state",
     [
-        (
-            [['{"status": "success", "results": {"current": {"version": "v7.2.7"}}}']],
-            FirmwareSection(status="success", results=FirmwareResults(current=FirmwareImage(version="v7.2.7"))),
-        ),
-        ([["not-json"]], FirmwareSection(status="error", error="parse", message="JSON parse failed")),
-        ([], None),
+        (FirmwareSection(status="error", error="connection", message="Request failed"), State.UNKNOWN),
+        (FirmwareSection(status="error", error="api", message="Invalid response"), State.WARN),
+        (FirmwareSection(status="pending"), State.WARN),
     ],
 )
-def test_parse_fortios_firmware(string_table: list[list[str]] | list[list], expected_section: FirmwareSection | None) -> None:
-    assert _parse_json_section(string_table) == expected_section
+def test_check_fortios_firmware_error_status(section, expected_state):
+    assert list(check_fortios_firmware(section))[0].state == expected_state
+
+
+def test_check_fortios_firmware_up_to_date():
+    results = list(check_fortios_firmware(_section({"version": "v7.2.8", "build": 1639}, [])))
+
+    assert results == [
+        Result(state=State.OK, summary="System is up to date: v7.2.8", details="Current: v7.2.8 build 1639"),
+        Metric("updates_available", 0),
+    ]
+
+
+def test_check_fortios_firmware_same_branch_update():
+    section = _section(
+        {"version": "v7.2.8", "major": 7, "minor": 2, "patch": 8, "build": 1639},
+        [{"version": "v7.2.9", "major": 7, "minor": 2, "patch": 9, "build": 1700, "maturity": "mature"}],
+    )
+
+    results = list(check_fortios_firmware(section))
+
+    assert results[0] == Result(
+        state=State.WARN,
+        summary="Updates available: 1 update(s) available",
+        details="Current: v7.2.8 build 1639\nRecommended: v7.2.9 build 1700",
+    )
+    assert results[1:] == [Metric("updates_available", 1), Metric("mature_updates", 1)]
 
 
 @pytest.mark.parametrize(
-    "section, expected_services",
+    "config, expected_state",
     [
-        (FirmwareSection(status="success"), [Service()]),
-        (None, []),
+        ({}, State.CRIT),
+        ({"critical_on_branch_change": False}, State.WARN),
+        ({"ok_if_unmatured_branch": True}, State.OK),
     ],
 )
-def test_discover_fortios_firmware(section: FirmwareSection | None, expected_services: list[Service]) -> None:
-    assert list(discover_fortios_firmware(section)) == expected_services
+def test_check_fortios_firmware_branch_change(config, expected_state):
+    section = _section(
+        {"version": "v7.2.8", "major": 7, "minor": 2, "patch": 8, "build": 1639},
+        [{"version": "v7.4.1", "major": 7, "minor": 4, "patch": 1, "build": 1800, "maturity": "beta"}],
+        **config,
+    )
+
+    results = list(check_fortios_firmware(section))
+
+    assert results[0].state == expected_state
+    expected_summary = (
+        "Only immature branch updates available: 1 update(s) available"
+        if config.get("ok_if_unmatured_branch")
+        else "Updates available (branch change): 1 update(s) available"
+    )
+    assert results[0].summary == expected_summary
+    assert results[1] == Metric("updates_available", 1)
 
 
-@pytest.mark.parametrize(
-    "section, expected_check_result",
-    [
-        (None, [Result(state=State.UNKNOWN, summary="No firmware data received")]),
-        (
-            FirmwareSection(status="error", error="connection", message="Failed to connect to FortiGuard"),
-            [Result(state=State.UNKNOWN, summary="Cannot check updates: Failed to connect to FortiGuard")],
-        ),
-        (
-            FirmwareSection(
-                status="success",
-                results=FirmwareResults(
-                    current=FirmwareImage(version="v7.2.7", build=1577, major=7, minor=2, patch=7, platform_id="FGT60F"),
-                    available=[FirmwareImage(version="v7.2.8", build=1639, major=7, minor=2, patch=8, platform_id="FGT60F", maturity="M")],
-                ),
-            ),
-            [
-                Result(state=State.WARN, summary="Updates available: 1 update(s) available", details="Current: v7.2.7 build 1577\nRecommended: v7.2.8 build 1639"),
-                Metric("updates_available", 1),
-                Metric("mature_updates", 1),
-            ],
-        ),
-        (
-            FirmwareSection(
-                status="success",
-                config=FirmwareConfig(ok_if_unmatured_branch=True),
-                results=FirmwareResults(
-                    current=FirmwareImage(version="v7.2.7", build=1577, major=7, minor=2, patch=7, platform_id="FGT60F"),
-                    available=[FirmwareImage(version="v7.4.0", build=1000, major=7, minor=4, patch=0, platform_id="FGT60F", maturity="F")],
-                ),
-            ),
-            [
-                Result(state=State.OK, summary="Only immature branch updates available: 1 update(s) available", details="Current: v7.2.7 build 1577\nRecommended: v7.4.0 build 1000\nBranch candidate: v7.4.0 build 1000"),
-                Metric("updates_available", 1),
-                Metric("mature_updates", 0),
-            ],
-        ),
-    ],
-)
-def test_check_fortios_firmware(section: FirmwareSection | None, expected_check_result: list[Result | Metric]) -> None:
-    assert list(check_fortios_firmware(section)) == expected_check_result
+def test_check_fortios_firmware_skips_incompatible_images():
+    section = _section(
+        {"version": "v7.2.8", "major": 7, "minor": 2, "patch": 8, "platform-id": "FGT60F"},
+        [
+            {"version": "v7.2.9", "major": 7, "minor": 2, "patch": 9, "can_upgrade": False},
+            {"version": "v7.4.1", "major": 7, "minor": 4, "patch": 1, "platform-id": "FGT40F"},
+        ],
+    )
+
+    results = list(check_fortios_firmware(section))
+
+    assert results[0].state == State.OK
+    assert "skipped 2 incompatible images" in results[0].details
+    assert results[1] == Metric("updates_available", 0)

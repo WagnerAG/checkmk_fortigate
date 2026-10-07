@@ -17,13 +17,7 @@
 
 import pytest
 
-from cmk_addons.plugins.fortios.agent_based.fortios_resources import (
-    FortiResource,
-    Resource,
-    ResourceResult,
-    Session,
-    parse_fortios_resources,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample, parse_fortios_resources
 
 
 @pytest.mark.parametrize(
@@ -32,10 +26,10 @@ from cmk_addons.plugins.fortios.agent_based.fortios_resources import (
         (
             [
                 [
-                    '[{"action": "", "build": 1639, "http_method": "GET", "name": "vdom-resource", "path": "system", "results": {"cpu": 0, "custom-service": {"current_usage": 122, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 9, "max_custom_value": 2048, "max_guaranteed_value": 2048, "min_custom_value": 122, "min_guaranteed_value": 0, "usage_percent": 0}, "dialup-tunnel": {"current_usage": 4, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 5, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "firewall-address": {"current_usage": 78, "custom_max": 0, "global_max": 42048, "guaranteed": 0, "id": 7, "max_custom_value": 42048, "max_guaranteed_value": 42048, "min_custom_value": 78, "min_guaranteed_value": 0, "usage_percent": 0}, "firewall-addrgrp": {"current_usage": 7, "custom_max": 0, "global_max": 10692, "guaranteed": 0, "id": 8, "max_custom_value": 10692, "max_guaranteed_value": 10692, "min_custom_value": 7, "min_guaranteed_value": 0, "usage_percent": 0}, "firewall-policy": {"current_usage": 44, "custom_max": 0, "global_max": 21024, "guaranteed": 0, "id": 6, "max_custom_value": 20640, "max_guaranteed_value": 20640, "min_custom_value": 44, "min_guaranteed_value": 0, "usage_percent": 0}, "ipsec-phase1": {"current_usage": 0, "custom_max": 0, "global_max": 2000, "guaranteed": 0, "id": 1, "max_custom_value": 2000, "max_guaranteed_value": 2000, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "ipsec-phase1-interface": {"current_usage": 4, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 3, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 4, "min_guaranteed_value": 0, "usage_percent": 0}, "ipsec-phase2": {"current_usage": 0, "custom_max": 0, "global_max": 2000, "guaranteed": 0, "id": 2, "max_custom_value": 2000, "max_guaranteed_value": 2000, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "ipsec-phase2-interface": {"current_usage": 4, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 4, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 4, "min_guaranteed_value": 0, "usage_percent": 0}, "is_deletable": false, "log-disk-quota": {"current_usage": 0, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 17, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 100, "min_guaranteed_value": 0, "usage_percent": 0}, "memory": 46, "onetime-schedule": {"current_usage": 0, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 11, "max_custom_value": 1000, "max_guaranteed_value": 1000, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "proxy": {"current_usage": 0, "custom_max": 0, "global_max": 12000, "guaranteed": 0, "id": 16, "max_custom_value": 12000, "max_guaranteed_value": 12000, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "recurring-schedule": {"current_usage": 2, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 12, "max_custom_value": 512, "max_guaranteed_value": 512, "min_custom_value": 2, "min_guaranteed_value": 0, "usage_percent": 0}, "service-group": {"current_usage": 8, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 10, "max_custom_value": 1000, "max_guaranteed_value": 1000, "min_custom_value": 8, "min_guaranteed_value": 0, "usage_percent": 0}, "session": {"current_usage": 1344, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 0, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "setup_rate": 10, "sslvpn": {"current_usage": 0, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 15, "max_custom_value": 0, "max_guaranteed_value": 0, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "user": {"current_usage": 0, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 13, "max_custom_value": 1000, "max_guaranteed_value": 1000, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}, "user-group": {"current_usage": 0, "custom_max": 0, "global_max": 0, "guaranteed": 0, "id": 14, "max_custom_value": 500, "max_guaranteed_value": 500, "min_custom_value": 1, "min_guaranteed_value": 0, "usage_percent": 0}}, "serial": "Serial01", "status": "success", "vdom": "root", "version": "v7.2.8"}]'
+                    '{"http_method": "GET", "name": "usage", "path": "system/resource", "results": {"cpu": [{"current": 0}], "mem": [{"current": 46}], "session": [{"current": 1344}]}, "serial": "Serial01", "status": "success"}'
                 ]
             ],
-            [FortiResource(vdoms=[ResourceResult(results=Resource(cpu=0, memory=46, session=Session(current_usage=1344)), vdom="root")], total_cpu=0, total_memory=46, total_sessions=1344)],
+            [FortiResource(results=ResourceUsage(cpu=[UsageSample(current=0)], mem=[UsageSample(current=46)], session=[UsageSample(current=1344)]), total_cpu=0, total_memory=46, total_sessions=1344)],
         ),
     ],
 )

@@ -22,7 +22,6 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 
 from __future__ import annotations
 
-
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 
 

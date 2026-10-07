@@ -19,11 +19,9 @@
 Check_MK agent based checks to be used with agent_fortios Datasource
 
 """
+from cmk.agent_based.v2 import InventoryPlugin, InventoryResult, TableRow
 
 from .fortios_managed_switch import Switch
-
-
-from cmk.agent_based.v2 import InventoryResult, InventoryPlugin, TableRow
 
 
 def model_version_build(os_version: str) -> tuple[str, str, str]:

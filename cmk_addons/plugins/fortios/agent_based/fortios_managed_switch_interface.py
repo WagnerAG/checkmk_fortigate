@@ -28,14 +28,9 @@ import time
 from enum import IntEnum
 from typing import Any, Mapping, Optional, Union
 
-from cmk.agent_based.v2.render import (
-    networkbandwidth,
-)
-
+from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, GetRateError, Metric, Result, Service, State, check_levels, get_rate, get_value_store
+from cmk.agent_based.v2.render import networkbandwidth
 from pydantic import BaseModel
-
-
-from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, GetRateError, Metric, Result, Service, State, get_rate, get_value_store, check_levels
 
 
 class IgmpSnoopingGroup(BaseModel):

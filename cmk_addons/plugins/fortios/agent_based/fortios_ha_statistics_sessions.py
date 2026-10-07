@@ -26,35 +26,40 @@ from typing import Any, Dict, Mapping
 
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State, check_levels
 
-from .fortios_resources import FortiResource
+from .fortios_ha_statistics import HAStatistics
 
 DEFAULT_SESSION_LEVELS: Dict = {"session_levels": ("fixed", (20000, 30000))}
 
 
-def discovery_fortios_resources_sessions(section: FortiResource) -> DiscoveryResult:
-    yield Service()
+def discovery_fortios_ha_statistics_sessions(section: HAStatistics) -> DiscoveryResult:
+    for node in section.nodes:
+        yield Service(item=node.hostname)
 
 
-def check_fortios_resources_sessions(params: Mapping[str, Any], section: FortiResource) -> CheckResult:
+def check_fortios_ha_statistics_sessions(item: str, params: Mapping[str, Any], section: HAStatistics) -> CheckResult:
+    node = section.node(item)
+    if node is None:
+        yield Result(state=State.UNKNOWN, summary="No data available for this node")
+        return
+
     session_levels = params.get("session_levels")
 
-    yield Result(state=State.OK, summary="Sessions")
-    yield Metric("active_sessions", section.total_sessions, levels=session_levels[1])
+    yield Metric("active_sessions", node.sessions, levels=session_levels[1])
     yield from check_levels(
         metric_name="total_sessions",
-        value=section.total_sessions,
+        value=node.sessions,
         levels_upper=session_levels,
         label="Total",
         boundaries=(0, None),
     )
 
 
-check_plugin_fortios_resources_sessions = CheckPlugin(
-    name="fortios_resources_sessions",
-    service_name="Sessions",
-    sections=["fortios_vdom_resources"],
-    discovery_function=discovery_fortios_resources_sessions,
+check_plugin_fortios_ha_statistics_sessions = CheckPlugin(
+    name="fortios_ha_statistics_sessions",
+    service_name="Sessions %s",
+    sections=["fortios_ha_statistics"],
+    discovery_function=discovery_fortios_ha_statistics_sessions,
     check_ruleset_name="fortios_resources_sessions",
-    check_function=check_fortios_resources_sessions,
+    check_function=check_fortios_ha_statistics_sessions,
     check_default_parameters=DEFAULT_SESSION_LEVELS,
 )

@@ -19,8 +19,8 @@ Check_MK WATO rule spec for FortiOS special agent
 
 """
 
-from cmk.rulesets.v1 import Title, Help, Label
-from cmk.rulesets.v1.form_specs import DictElement, Dictionary, BooleanChoice, List, String, validators
+from cmk.rulesets.v1 import Help, Label, Title
+from cmk.rulesets.v1.form_specs import BooleanChoice, DictElement, Dictionary, List, String, validators
 from cmk.rulesets.v1.rule_specs import DiscoveryParameters, Topic
 
 
