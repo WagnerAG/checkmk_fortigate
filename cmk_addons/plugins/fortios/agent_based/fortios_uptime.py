@@ -26,10 +26,9 @@ import json
 import time
 from typing import Optional
 
-from pydantic import BaseModel, field_validator, model_validator
-
-from cmk.agent_based.v2.render import datetime, timespan
 from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
+from cmk.agent_based.v2.render import datetime, timespan
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class Uptime(BaseModel):

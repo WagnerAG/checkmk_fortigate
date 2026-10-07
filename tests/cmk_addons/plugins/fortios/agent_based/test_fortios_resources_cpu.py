@@ -15,26 +15,13 @@
 # WAGNER AG
 # Developer: opensource@wagner.ch
 
-from typing import (
-    Dict,
-    Tuple,
-)
+from typing import Dict, Tuple
 
 import pytest
+from cmk.agent_based.v2 import Metric, Result, State
 
-from cmk.agent_based.v2 import (
-    Metric,
-    Result,
-    State,
-)
-from cmk_addons.plugins.fortios.agent_based.fortios_resources import (
-    FortiResource,
-    ResourceUsage,
-    UsageSample,
-)
-from cmk_addons.plugins.fortios.agent_based.fortios_resources_cpu import (
-    check_fortios_resources_cpu,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample
+from cmk_addons.plugins.fortios.agent_based.fortios_resources_cpu import check_fortios_resources_cpu
 
 DEFAULT_CPU_LEVELS: Dict = {"util": (80.0, 90.0)}
 

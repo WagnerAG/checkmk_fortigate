@@ -18,16 +18,10 @@
 from typing import Dict
 
 import pytest
+from cmk.agent_based.v2 import Metric, Result, State
 
-from cmk.agent_based.v2 import (
-    Metric,
-    Result,
-    State,
-)
 from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample
-from cmk_addons.plugins.fortios.agent_based.fortios_resources_memory import (
-    check_fortios_resources_memory,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_resources_memory import check_fortios_resources_memory
 
 DEFAULT_MEMORY_LEVELS: Dict = {"levels": ("fixed", (70.0, 80.0))}
 

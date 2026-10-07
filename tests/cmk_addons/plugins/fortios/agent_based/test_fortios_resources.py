@@ -17,12 +17,7 @@
 
 import pytest
 
-from cmk_addons.plugins.fortios.agent_based.fortios_resources import (
-    FortiResource,
-    ResourceUsage,
-    UsageSample,
-    parse_fortios_resources,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample, parse_fortios_resources
 
 
 @pytest.mark.parametrize(

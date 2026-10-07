@@ -30,6 +30,7 @@ from typing import Optional
 from cmk.agent_based.v2 import AgentSection
 from pydantic import BaseModel, model_validator
 
+
 class Proxy(BaseModel):
     port: int
     protocol: int
