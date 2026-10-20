@@ -30,8 +30,6 @@ from cmk_addons.plugins.fortios.agent_based.fortios_dhcp_scope import (
     DEFAULT_DHCP_LEVELS,
     DhcpServer,
     IpRange,
-    ReservedAddress,
-    VciString,
     check_fortios_dhcp_scope,
     parse_fortios_dhcp_scope,
 )
@@ -63,72 +61,15 @@ from cmk_addons.plugins.fortios.agent_based.fortios_dhcp_scope import (
             ],
             {
                 "10.10.10.0/24": DhcpServer(
-                    id=2,
                     q_origin_key=2,
                     status="enable",
-                    lease_time=604800,
-                    mac_acl_default_action="assign",
-                    forticlient_on_net_status="enable",
-                    dns_service="specify",
-                    dns_server1="0.0.0.0",
-                    dns_server2="0.0.0.0",
-                    dns_server3="0.0.0.0",
-                    dns_server4="0.0.0.0",
-                    wifi_ac_service="specify",
-                    wifi_ac1="0.0.0.0",
-                    wifi_ac2="0.0.0.0",
-                    wifi_ac3="0.0.0.0",
-                    ntp_service="local",
-                    ntp_server1="0.0.0.0",
-                    ntp_server2="0.0.0.0",
-                    ntp_server3="0.0.0.0",
-                    domain="",
-                    wins_server1="0.0.0.0",
-                    wins_server2="0.0.0.0",
-                    default_gateway="10.10.10.1",
-                    next_server="0.0.0.0",
-                    netmask="255.255.255.0",
                     interface="fortilink",
                     ip_range=[
                         IpRange(
-                            id=1,
-                            q_origin_key=1,
                             start_ip="10.10.10.2",
                             end_ip="10.10.10.254",
-                            vci_match="disable",
-                            vci_string=[],
-                            uci_match="disable",
-                            uci_string=[],
-                            lease_time=0,
                         )
                     ],
-                    timezone_option="disable",
-                    timezone="",
-                    tftp_server=[],
-                    filename="",
-                    options=[],
-                    server_type="regular",
-                    ip_mode="range",
-                    conflicted_ip_timeout=1800,
-                    ipsec_lease_hold=60,
-                    auto_configuration="enable",
-                    dhcp_settings_from_fortiipam="disable",
-                    auto_managed_status="enable",
-                    ddns_update="disable",
-                    ddns_update_override="disable",
-                    ddns_server_ip="0.0.0.0",
-                    ddns_zone="",
-                    ddns_auth="disable",
-                    ddns_keyname="",
-                    ddns_key="ENC Key01",
-                    ddns_ttl=300,
-                    vci_match="enable",
-                    vci_string=[
-                        VciString(vci_string="FortiSwitch", q_origin_key="FortiSwitch"),
-                        VciString(vci_string="FortiExtender", q_origin_key="FortiExtender"),
-                    ],
-                    exclude_range=[],
-                    reserved_address=[],
                 )
             },
         ),
@@ -171,72 +112,15 @@ def test_parse_fortios_dhcp_scope_new(string_table, expected_section) -> None:
             ],
             {
                 "10.10.10.0/24": DhcpServer(
-                    id=2,
                     q_origin_key=2,
                     status="enable",
-                    lease_time=604800,
-                    mac_acl_default_action="assign",
-                    forticlient_on_net_status="enable",
-                    dns_service="specify",
-                    dns_server1="0.0.0.0",
-                    dns_server2="0.0.0.0",
-                    dns_server3="0.0.0.0",
-                    dns_server4="0.0.0.0",
-                    wifi_ac_service="specify",
-                    wifi_ac1="0.0.0.0",
-                    wifi_ac2="0.0.0.0",
-                    wifi_ac3="0.0.0.0",
-                    ntp_service="local",
-                    ntp_server1="0.0.0.0",
-                    ntp_server2="0.0.0.0",
-                    ntp_server3="0.0.0.0",
-                    domain="",
-                    wins_server1="0.0.0.0",
-                    wins_server2="0.0.0.0",
-                    default_gateway="10.10.10.1",
-                    next_server="0.0.0.0",
-                    netmask="255.255.255.0",
                     interface="fortilink",
                     ip_range=[
                         IpRange(
-                            id=1,
-                            q_origin_key=1,
                             start_ip="10.10.10.2",
                             end_ip="10.10.10.254",
-                            vci_match="disable",
-                            vci_string=[],
-                            uci_match="disable",
-                            uci_string=[],
-                            lease_time=0,
                         )
                     ],
-                    timezone_option="disable",
-                    timezone="",
-                    tftp_server=[],
-                    filename="",
-                    options=[],
-                    server_type="regular",
-                    ip_mode="range",
-                    conflicted_ip_timeout=1800,
-                    ipsec_lease_hold=60,
-                    auto_configuration="enable",
-                    dhcp_settings_from_fortiipam="disable",
-                    auto_managed_status="enable",
-                    ddns_update="disable",
-                    ddns_update_override="disable",
-                    ddns_server_ip="0.0.0.0",
-                    ddns_zone="",
-                    ddns_auth="disable",
-                    ddns_keyname="",
-                    ddns_key="ENC xyz",
-                    ddns_ttl=300,
-                    vci_match="enable",
-                    vci_string=[
-                        VciString(vci_string="FortiSwitch", q_origin_key="FortiSwitch"),
-                        VciString(vci_string="FortiExtender", q_origin_key="FortiExtender"),
-                    ],
-                    exclude_range=[],
-                    reserved_address=[],
                 )
             },
         ),
@@ -258,61 +142,10 @@ def test_parse_fortios_dhcp_scope_f40(string_table, expected_section) -> None:
             [
                 {
                     "10.128.1.0/24": DhcpServer(
-                        id=3,
                         q_origin_key=3,
                         status="enable",
-                        lease_time=604800,
-                        mac_acl_default_action="assign",
-                        forticlient_on_net_status="enable",
-                        dns_service="local",
-                        dns_server1="0.0.0.0",
-                        dns_server2="0.0.0.0",
-                        dns_server3="0.0.0.0",
-                        dns_server4="0.0.0.0",
-                        wifi_ac_service="specify",
-                        wifi_ac1="0.0.0.0",
-                        wifi_ac2="0.0.0.0",
-                        wifi_ac3="0.0.0.0",
-                        ntp_service="local",
-                        ntp_server1="0.0.0.0",
-                        ntp_server2="0.0.0.0",
-                        ntp_server3="0.0.0.0",
-                        domain="",
-                        wins_server1="0.0.0.0",
-                        wins_server2="0.0.0.0",
-                        default_gateway="10.128.1.1",
-                        next_server="0.0.0.0",
-                        netmask="255.255.255.0",
                         interface="fortilink",
-                        ip_range=[IpRange(id=1, q_origin_key=1, start_ip="10.128.1.100", end_ip="10.128.1.254", vci_match="disable", vci_string=[], uci_match="disable", uci_string=[], lease_time=0)],
-                        timezone_option="disable",
-                        timezone="00",
-                        tftp_server=[],
-                        filename="",
-                        options=[],
-                        server_type="regular",
-                        ip_mode="range",
-                        conflicted_ip_timeout=1800,
-                        ipsec_lease_hold=60,
-                        auto_configuration="enable",
-                        dhcp_settings_from_fortiipam="disable",
-                        auto_managed_status="enable",
-                        ddns_update="disable",
-                        ddns_update_override="disable",
-                        ddns_server_ip="0.0.0.0",
-                        ddns_zone="",
-                        ddns_auth="disable",
-                        ddns_keyname="",
-                        ddns_key="ENC -1YkQCs+hHEqoYnXU1gvefH2QCrBw=",
-                        ddns_ttl=300,
-                        vci_match="enable",
-                        vci_string=[VciString(vci_string="FortiSwitch", q_origin_key="FortiSwitch"), VciString(vci_string="FortiExtender", q_origin_key="FortiExtender")],
-                        exclude_range=[],
-                        reserved_address=[
-                            ReservedAddress(id=1, q_origin_key=1, type="mac", ip="10.128.1.100", mac="aa:aa:bb:bb:cc:cc", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
-                            ReservedAddress(id=2, q_origin_key=2, type="mac", ip="10.128.1.101", mac="aa:aa:bb:bb:dd:dd", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
-                            ReservedAddress(id=3, q_origin_key=3, type="mac", ip="10.128.1.102", mac="aa:aa:bb:bb:ee:ee", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
-                        ],
+                        ip_range=[IpRange(start_ip="10.128.1.100", end_ip="10.128.1.254")],
                     ),
                 }
             ],
@@ -321,6 +154,53 @@ def test_parse_fortios_dhcp_scope_f40(string_table, expected_section) -> None:
 )
 def test_parse_fortios_dhcp_scope(string_table, expected_section) -> None:
     assert parse_fortios_dhcp_scope(string_table) == expected_section[0]
+
+
+@pytest.mark.parametrize(
+    "string_table, expected_section",
+    [
+        (
+            [
+                [
+                    '{"http_method": "GET", "status": "success", "vdom": "root", "results": [{'
+                    '"auto-configuration": "enable", "auto-managed-status": "enable", "conflicted-ip-timeout": 1800, '
+                    '"ddns-auth": "disable", "ddns-key": "redacted", "ddns-keyname": "redacted", "ddns-server-ip": "0.0.0.0", '
+                    '"ddns-ttl": 300, "ddns-update": "disable", "ddns-update-override": "disable", "ddns-zone": "", '
+                    '"default-gateway": "10.44.77.254", "dhcp-settings-from-fortiipam": "disable", "dns-server1": "10.117.127.201", '
+                    '"dns-server2": "172.16.101.10", "dns-server3": "0.0.0.0", "dns-server4": "0.0.0.0", "dns-service": "specify", '
+                    '"domain": "", "exclude-range": [], "filename": "\\\\Default\\\\sources\\\\boot.wim", "forticlient-on-net-status": "enable", '
+                    '"id": 27, "interface": "VLAN77_DATA_INS", "ip-mode": "range", "ip-range": [{"end-ip": "10.44.77.254", "id": 1, '
+                    '"lease-time": 0, "q_origin_key": "redacted", "start-ip": "10.44.77.2", "uci-match": "disable", "uci-string": [], '
+                    '"vci-match": "disable", "vci-string": []}], "ipsec-lease-hold": 60, "lease-time": 43200, "mac-acl-default-action": "assign", '
+                    '"netmask": "255.255.255.0", "next-server": "10.117.127.42", "ntp-server1": "0.0.0.0", "ntp-server2": "0.0.0.0", '
+                    '"ntp-server3": "0.0.0.0", "ntp-service": "local", "options": [{"code": 60, "id": 1, "ip": "", "q_origin_key": "redacted", '
+                    '"type": "string", "uci-match": "disable", "uci-string": [], "value": "PXEClient", "vci-match": "disable", "vci-string": []}, '
+                    '{"code": 66, "id": 2, "ip": "\\"10.117.127.42\\" ", "q_origin_key": "redacted", "type": "ip", "uci-match": "disable", '
+                    '"uci-string": [], "value": "", "vci-match": "disable", "vci-string": []}], "q_origin_key": "redacted", '
+                    '"relay-agent": "0.0.0.0", "reserved-address": [], "server-type": "regular", "shared-subnet": "disable", "status": "enable", '
+                    '"tftp-server": [{"q_origin_key": "redacted", "tftp-server": "10.117.127.42"}], "timezone": "", "timezone-option": "disable", '
+                    '"vci-match": "disable", "vci-string": [], "wifi-ac1": "0.0.0.0", "wifi-ac2": "0.0.0.0", "wifi-ac3": "0.0.0.0", '
+                    '"wifi-ac-service": "specify", "wins-server1": "0.0.0.0", "wins-server2": "0.0.0.0"}]}'
+                ]
+            ],
+            {
+                "10.44.77.0/24": DhcpServer(
+                    q_origin_key="redacted",
+                    status="enable",
+                    interface="VLAN77_DATA_INS",
+                    ip_range=[
+                        IpRange(
+                            start_ip="10.44.77.2",
+                            end_ip="10.44.77.254",
+                        )
+                    ],
+                )
+            },
+        ),
+    ],
+)
+def test_parse_fortios_dhcp_scope_pxe(string_table, expected_section) -> None:
+    assert parse_fortios_dhcp_scope(string_table) == expected_section
 
 
 @pytest.mark.parametrize(
@@ -353,65 +233,11 @@ def test_parse_fortios_dhcp_lease(string_table, expected_section) -> None:
             "10.128.1.0/24",
             {
                 "10.128.1.0/24": DhcpServer(
-                    id=3,
                     q_origin_key=3,
                     status="enable",
-                    lease_time=604800,
-                    mac_acl_default_action="assign",
-                    forticlient_on_net_status="enable",
-                    dns_service="local",
-                    dns_server1="0.0.0.0",
-                    dns_server2="0.0.0.0",
-                    dns_server3="0.0.0.0",
-                    dns_server4="0.0.0.0",
-                    wifi_ac_service="specify",
-                    wifi_ac1="0.0.0.0",
-                    wifi_ac2="0.0.0.0",
-                    wifi_ac3="0.0.0.0",
-                    ntp_service="local",
-                    ntp_server1="0.0.0.0",
-                    ntp_server2="0.0.0.0",
-                    ntp_server3="0.0.0.0",
-                    domain="",
-                    wins_server1="0.0.0.0",
-                    wins_server2="0.0.0.0",
-                    default_gateway="10.128.1.1",
-                    next_server="0.0.0.0",
-                    netmask="255.255.255.0",
                     interface="fortilink",
                     ip_range=[
-                        IpRange(id=1, q_origin_key=1, start_ip="10.128.1.100", end_ip="10.128.1.254", vci_match="disable", vci_string=[], uci_match="disable", uci_string=[], lease_time=0),
-                    ],
-                    timezone_option="disable",
-                    timezone="00",
-                    tftp_server=[],
-                    filename="",
-                    options=[],
-                    server_type="regular",
-                    ip_mode="range",
-                    conflicted_ip_timeout=1800,
-                    ipsec_lease_hold=60,
-                    auto_configuration="enable",
-                    dhcp_settings_from_fortiipam="disable",
-                    auto_managed_status="enable",
-                    ddns_update="disable",
-                    ddns_update_override="disable",
-                    ddns_server_ip="0.0.0.0",
-                    ddns_zone="",
-                    ddns_auth="disable",
-                    ddns_keyname="",
-                    ddns_key="ENC -1YkQCs+hHEqoYnXU1gvefH2QCrBw=",
-                    ddns_ttl=300,
-                    vci_match="enable",
-                    vci_string=[
-                        VciString(vci_string="FortiSwitch", q_origin_key="FortiSwitch"),
-                        VciString(vci_string="FortiExtender", q_origin_key="FortiExtender"),
-                    ],
-                    exclude_range=[],
-                    reserved_address=[
-                        ReservedAddress(id=1, q_origin_key=1, type="mac", ip="10.128.1.100", mac="aa:aa:bb:bb:cc:cc", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
-                        ReservedAddress(id=2, q_origin_key=2, type="mac", ip="10.128.1.101", mac="aa:aa:bb:bb:dd:dd", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
-                        ReservedAddress(id=3, q_origin_key=3, type="mac", ip="10.128.1.102", mac="aa:aa:bb:bb:ee:ee", action="reserved", circuit_id_type="string", circuit_id="", remote_id_type="string", remote_id="", description=""),
+                        IpRange(start_ip="10.128.1.100", end_ip="10.128.1.254"),
                     ],
                 ),
             },

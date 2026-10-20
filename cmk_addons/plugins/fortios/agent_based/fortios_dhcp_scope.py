@@ -35,88 +35,15 @@ DEFAULT_DHCP_LEVELS: Dict = {"dhcp_scope_levels": ("fixed", (80, 90))}
 
 
 class IpRange(BaseModel):
-    id: int
-    q_origin_key: int
     start_ip: str
     end_ip: str
-    vci_match: str
-    vci_string: List[str]
-    uci_match: str
-    uci_string: List[str]
-    lease_time: int
-
-
-class VciString(BaseModel):
-    vci_string: str
-    q_origin_key: str
-
-
-class ReservedAddress(BaseModel):
-    id: int
-    q_origin_key: int
-    type: str
-    ip: str
-    mac: str
-    action: str
-    circuit_id_type: str
-    circuit_id: str
-    remote_id_type: str
-    remote_id: str
-    description: str
 
 
 class DhcpServer(BaseModel):
-    id: int
-    q_origin_key: int
+    q_origin_key: Any
     status: str
-    lease_time: int
-    mac_acl_default_action: str
-    forticlient_on_net_status: str
-    dns_service: str
-    dns_server1: str
-    dns_server2: str
-    dns_server3: str
-    dns_server4: str
-    wifi_ac_service: str
-    wifi_ac1: str
-    wifi_ac2: str
-    wifi_ac3: str
-    ntp_service: str
-    ntp_server1: str
-    ntp_server2: str
-    ntp_server3: str
-    domain: str
-    wins_server1: str
-    wins_server2: str
-    default_gateway: str
-    next_server: str
-    netmask: str
     interface: str
     ip_range: List[IpRange]
-    timezone_option: str
-    timezone: str
-    tftp_server: List[str]
-    filename: str
-    options: List[dict]
-    server_type: str
-    ip_mode: str
-    conflicted_ip_timeout: int
-    ipsec_lease_hold: int
-    auto_configuration: str
-    dhcp_settings_from_fortiipam: str
-    auto_managed_status: str
-    ddns_update: str
-    ddns_update_override: str
-    ddns_server_ip: str
-    ddns_zone: str
-    ddns_auth: str
-    ddns_keyname: str
-    ddns_key: str
-    ddns_ttl: int
-    vci_match: str
-    vci_string: List[VciString]
-    exclude_range: List[str]
-    reserved_address: List[ReservedAddress]
 
     @property
     def summary(self) -> str:
