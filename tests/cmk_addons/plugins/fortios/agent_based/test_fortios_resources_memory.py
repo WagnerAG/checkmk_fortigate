@@ -18,16 +18,10 @@
 from typing import Dict
 
 import pytest
+from cmk.agent_based.v2 import Metric, Result, State
 
-from cmk.agent_based.v2 import (
-    Metric,
-    Result,
-    State,
-)
-from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, Resource, ResourceResult, Session
-from cmk_addons.plugins.fortios.agent_based.fortios_resources_memory import (
-    check_fortios_resources_memory,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_resources import FortiResource, ResourceUsage, UsageSample
+from cmk_addons.plugins.fortios.agent_based.fortios_resources_memory import check_fortios_resources_memory
 
 DEFAULT_MEMORY_LEVELS: Dict = {"levels": ("fixed", (70.0, 80.0))}
 
@@ -37,7 +31,7 @@ DEFAULT_MEMORY_LEVELS: Dict = {"levels": ("fixed", (70.0, 80.0))}
     [
         (
             DEFAULT_MEMORY_LEVELS,
-            (FortiResource(vdoms=[ResourceResult(vdom="root", results=Resource(cpu=25, memory=21, session=Session(current_usage=5000)))], total_cpu=25, total_memory=25, total_sessions=5000)),
+            FortiResource(results=ResourceUsage(cpu=[UsageSample(current=25)], mem=[UsageSample(current=21)], session=[UsageSample(current=5000)])),
             [
                 Result(state=State.OK, summary="Total usage"),
                 Metric("memory_util", 21.0, levels=(70.0, 80.0), boundaries=(0, 100)),

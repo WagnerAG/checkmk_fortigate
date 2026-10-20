@@ -20,23 +20,10 @@ from typing import Dict, Tuple
 from unittest.mock import patch
 
 import pytest
+from cmk.agent_based.v2 import Metric, Result, State
 
-from cmk.agent_based.v2 import (
-    Metric,
-    Result,
-    State,
-)
-from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import (
-    FortiIPSec,
-    FortiIPSecVDOM,
-    parse_fortios_ipsec,
-)
-
-
-from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel import (
-    check_fortios_ipsec,
-)
-
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import FortiIPSec, FortiIPSecVDOM, parse_fortios_ipsec
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_tunnel import check_fortios_ipsec
 
 IPSEC_SECTION: dict = {
     "VDOM01 P1_TEST": FortiIPSecVDOM(

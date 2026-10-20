@@ -48,10 +48,6 @@ def check_fortios_resources_sessions(params: Mapping[str, Any], section: FortiRe
         boundaries=(0, None),
     )
 
-    if len(section.vdoms) > 1:
-        for item in section.vdoms:
-            yield Metric(item.vdom, item.results.session.current_usage, boundaries=(0, 100))
-
 
 check_plugin_fortios_resources_sessions = CheckPlugin(
     name="fortios_resources_sessions",

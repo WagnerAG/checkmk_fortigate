@@ -1,103 +1,73 @@
-#!/usr/bin/env python3
-# -*- encoding: utf-8; py-indent-offset: 4 -*-
+from types import SimpleNamespace
 
-# This is free software;  you can redistribute it and/or modify it
-# under the  terms of the  GNU General Public License  as published by
-# the Free Software Foundation in version 2.  check_mk is  distributed
-# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
-# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
-# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
-# tails. You should have  received  a copy of the  GNU  General Public
-# License along with GNU Make; see the file  COPYING.  If  not,  write
-# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
-# Boston, MA 02110-1301 USA.
-
-# WAGNER AG
-# Developer: opensource@wagner.ch
+import pytest
 
 from cmk.agent_based.v2 import Result, Service, State
-from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_health import (
-    CPU,
-    POE,
-    FanSpeed,
-    FanSummaryEntry,
-    FortiosSwitchData,
-    Memory,
-    PerformanceStatus,
-    Summary,
-    SummaryEntry,
-    TimeUnit,
-    Uptime,
-)
 from cmk_addons.plugins.fortios.agent_based.fortios_managed_switch_summary import (
     check_fortios_switch_summary,
     discovery_fortios_switch_summary,
 )
 
-PerformanceStatus.model_rebuild()
 
-_perf = PerformanceStatus(
-    cpu=CPU(idle=TimeUnit(unit="%", value=87), nice=TimeUnit(unit="%", value=0), system=TimeUnit(unit="%", value=12), user=TimeUnit(unit="%", value=1)),
-    memory=Memory(used=TimeUnit(unit="%", value=36)),
-    uptime=Uptime(days=TimeUnit(unit="days", value=113), hours=TimeUnit(unit="hours", value=5), minutes=TimeUnit(unit="minutes", value=16)),
+def _entry(rating, value=0):
+    return SimpleNamespace(rating=rating, value=value)
+
+
+def _section(summary):
+    return SimpleNamespace(summary=summary)
+
+
+def test_discovery_fortios_switch_summary():
+    assert list(discovery_fortios_switch_summary(_section(SimpleNamespace(overall="good")))) == [Service()]
+    assert list(discovery_fortios_switch_summary(_section(None))) == []
+    assert list(discovery_fortios_switch_summary(None)) == []
+
+
+def test_check_fortios_switch_summary_reports_component_states():
+    summary = SimpleNamespace(
+        cpu=_entry("good", 15),
+        memory=_entry("warning", 80),
+        temperature=None,
+        poe=None,
+        fan={
+            "fan1": SimpleNamespace(
+                rating="failed",
+                fan_speed=SimpleNamespace(value=1200, unit="rpm"),
+            )
+        },
+        psu={"psu1": _entry("good")},
+        overall="warning",
+    )
+
+    results = list(check_fortios_switch_summary(_section(summary)))
+
+    assert results == [
+        Result(state=State.OK, notice="CPU: good (value: 15)"),
+        Result(state=State.WARN, notice="Memory: warning (value: 80)"),
+        Result(state=State.CRIT, notice="Fan fan1: failed, speed: 1200rpm"),
+        Result(state=State.OK, notice="PSU psu1: good"),
+        Result(state=State.CRIT, summary="Overall: warning"),
+    ]
+
+
+@pytest.mark.parametrize(
+    "rating, expected_state",
+    [("good", State.OK), ("warning", State.WARN), ("unknown", State.CRIT)],
 )
-_poe = POE(max_value=800, unit="watts", value=26.1)
+def test_check_fortios_switch_summary_rating_mapping(rating, expected_state):
+    results = list(
+        check_fortios_switch_summary(
+            _section(
+                SimpleNamespace(
+                    cpu=_entry(rating), memory=None, temperature=None, poe=None, fan={}, psu={}, overall=rating
+                )
+            )
+        )
+    )
 
-_summary_all_good = Summary(
-    overall="good",
-    cpu=SummaryEntry(value=13, rating="good"),
-    memory=SummaryEntry(value=36, rating="good"),
-    temperature=SummaryEntry(value=44.0, rating="good"),
-    poe=SummaryEntry(value=100.0, rating="good"),
-    uptime=SummaryEntry(value=10352160, rating="good"),
-    fan={"Fan1": FanSummaryEntry(value="normal", rating="good", fan_speed=FanSpeed(value=50.0, unit="%"))},
-    psu={"PSU1": SummaryEntry(value="normal", rating="good")},
-)
-
-_summary_with_warning = Summary(
-    overall="warning",
-    cpu=SummaryEntry(value=13, rating="good"),
-    memory=SummaryEntry(value=36, rating="good"),
-    temperature=SummaryEntry(value=85.0, rating="warning"),
-    poe=SummaryEntry(value=100.0, rating="good"),
-    fan={"Fan1": FanSummaryEntry(value="normal", rating="good", fan_speed=FanSpeed(value=50.0, unit="%"))},
-    psu={"PSU1": SummaryEntry(value="failed", rating="critical")},
-)
+    assert results[-1] == Result(state=expected_state, summary=f"Overall: {rating}")
 
 
-def test_discovery_with_summary():
-    section = FortiosSwitchData(performance=_perf, poe=_poe, summary=_summary_all_good)
-    assert list(discovery_fortios_switch_summary(section)) == [Service()]
-
-
-def test_discovery_without_summary():
-    section = FortiosSwitchData(performance=_perf, poe=_poe)
-    assert list(discovery_fortios_switch_summary(section)) == []
-
-
-def test_check_all_good():
-    section = FortiosSwitchData(performance=_perf, poe=_poe, summary=_summary_all_good)
-    results = list(check_fortios_switch_summary(section))
-
-    assert Result(state=State.OK, summary="Overall: good") in results
-    assert Result(state=State.OK, notice="CPU: good (value: 13)") in results
-    assert Result(state=State.OK, notice="Memory: good (value: 36)") in results
-    assert Result(state=State.OK, notice="Temperature: good (value: 44.0)") in results
-    assert Result(state=State.OK, notice="PoE: good (value: 100.0)") in results
-    assert Result(state=State.OK, notice="Fan Fan1: good, speed: 50.0%") in results
-    assert Result(state=State.OK, notice="PSU PSU1: good") in results
-
-
-def test_check_warning_and_critical():
-    section = FortiosSwitchData(performance=_perf, poe=_poe, summary=_summary_with_warning)
-    results = list(check_fortios_switch_summary(section))
-
-    assert Result(state=State.CRIT, summary="Overall: warning") in results
-    assert Result(state=State.WARN, notice="Temperature: warning (value: 85.0)") in results
-    assert Result(state=State.CRIT, notice="PSU PSU1: critical") in results
-
-
-def test_check_no_summary():
-    section = FortiosSwitchData(performance=_perf, poe=_poe)
-    results = list(check_fortios_switch_summary(section))
-    assert results == []
+def test_check_fortios_switch_summary_without_summary():
+    assert list(check_fortios_switch_summary(None)) == []
+    assert list(check_fortios_switch_summary(_section(None))) == []

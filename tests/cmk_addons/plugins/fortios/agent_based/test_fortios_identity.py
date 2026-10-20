@@ -18,8 +18,8 @@
 from typing import Mapping
 
 import pytest
-
 from cmk.agent_based.v2 import Result, Service, State
+
 from cmk_addons.plugins.fortios.agent_based.fortios_device_info_inventory import DeviceInfo, ModelInfo
 from cmk_addons.plugins.fortios.agent_based.fortios_identity import check_fortios_identity, discover_fortios_identity
 
@@ -32,9 +32,7 @@ FULL_SECTION = {
     )
 }
 
-SERIAL_ONLY_SECTION = {
-    "Hostname01": DeviceInfo(serial="FGTSerialNumber", version="v7.2.7", build=1577, results=None)
-}
+SERIAL_ONLY_SECTION = {"Hostname01": DeviceInfo(serial="FGTSerialNumber", version="v7.2.7", build=1577, results=None)}
 
 
 @pytest.mark.parametrize(

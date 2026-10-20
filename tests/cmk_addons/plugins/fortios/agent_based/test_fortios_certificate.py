@@ -15,20 +15,13 @@
 # WAGNER AG
 # Developer: opensource@wagner.ch
 
+from datetime import datetime, timedelta, timezone
 from typing import Mapping
 
 import pytest
-from datetime import datetime, timedelta, timezone
 from cmk.agent_based.v2 import Metric, Result, Service, State
 
-from cmk_addons.plugins.fortios.agent_based.fortios_certificates import (
-    DEFAULT_CERT_PARAMS,
-    Certificate,
-    CertificateSet,
-    check_fortios_certificates,
-    discovery_fortios_certificates,
-    parse_fortios_certificates,
-)
+from cmk_addons.plugins.fortios.agent_based.fortios_certificates import DEFAULT_CERT_PARAMS, Certificate, CertificateSet, check_fortios_certificates, discovery_fortios_certificates, parse_fortios_certificates
 
 
 def _canonicalize_certificate_set(section: CertificateSet | None) -> CertificateSet | None:
@@ -56,14 +49,7 @@ def _canonicalize_certificate_set(section: CertificateSet | None) -> Certificate
     "string_table, expected_section",
     [
         (
-            [
-                [
-                    '{"results": ['
-                    '{"name": "Fortinet_CA_SSL", "source": "factory", "is_ca": true, "valid_to": 2007640248, "exists": true}, '
-                    '{"name": "example-cert-2024", "source": "user", "is_ca": false, "valid_to": 1724371199, "exists": true}'
-                    ']}'
-                ]
-            ],
+            [['{"results": [{"name": "Fortinet_CA_SSL", "source": "factory", "is_ca": true, "valid_to": 2007640248, "exists": true}, {"name": "example-cert-2024", "source": "user", "is_ca": false, "valid_to": 1724371199, "exists": true}]}']],
             CertificateSet(
                 certificates=[
                     Certificate(
@@ -158,7 +144,9 @@ def test_discovery_fortios_certificates(
                         is_ca=False,
                         valid_to=2208988800,
                         exists=True,
-                    ).human_expiry().split("(in ", 1)[1],
+                    )
+                    .human_expiry()
+                    .split("(in ", 1)[1],
                 ),
                 Metric("cert_total", 1),
                 Metric("cert_ok", 1),
@@ -287,14 +275,10 @@ def test_check_fortios_certificates_returns_ok_if_no_relevant_certificates() -> 
 
     actual_check_result = list(check_fortios_certificates(params, section))
 
-    assert actual_check_result == [
-        Result(state=State.OK, summary="No relevant certificates after filtering")
-    ]
+    assert actual_check_result == [Result(state=State.OK, summary="No relevant certificates after filtering")]
 
 
 def test_check_fortios_certificates_returns_unknown_if_no_data() -> None:
     actual_check_result = list(check_fortios_certificates(DEFAULT_CERT_PARAMS, None))
 
-    assert actual_check_result == [
-        Result(state=State.UNKNOWN, summary="No certificate data available")
-    ]
+    assert actual_check_result == [Result(state=State.UNKNOWN, summary="No certificate data available")]

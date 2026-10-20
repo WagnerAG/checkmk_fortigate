@@ -20,16 +20,10 @@ from typing import Dict
 from unittest.mock import patch
 
 import pytest
-
 from cmk.agent_based.v2 import Result, Service, State
-from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import (
-    FortiIPSec,
-    FortiIPSecVDOM,
-)
-from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_client import (
-    discovery_fortios_ipsec_client_vpn,
-    check_fortios_ipsec_client_vpn,
-)
+
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec import FortiIPSec, FortiIPSecVDOM
+from cmk_addons.plugins.fortios.agent_based.fortios_ipsec_client import check_fortios_ipsec_client_vpn, discovery_fortios_ipsec_client_vpn
 
 
 def _create_minimal_fortios_ipsec(

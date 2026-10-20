@@ -51,10 +51,6 @@ def check_fortios_resources_memory(params: Mapping[str, Any], section: FortiReso
         boundaries=(0, 100),
     )
 
-    if len(section.vdoms) > 1:
-        for item in section.vdoms:
-            yield Metric(item.vdom, item.results.memory, levels=memory_levels[1], boundaries=(0, 100))
-
 
 check_plugin_fortios_resources_memory = CheckPlugin(
     name="fortios_resources_memory",

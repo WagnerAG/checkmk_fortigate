@@ -30,11 +30,7 @@ from typing import Optional
 
 import requests
 import urllib3
-from cmk.special_agents.v0_unstable.agent_common import (
-    ConditionalPiggybackSection,
-    SectionWriter,
-    special_agent_main,
-)
+from cmk.special_agents.v0_unstable.agent_common import ConditionalPiggybackSection, SectionWriter, special_agent_main
 from cmk.special_agents.v0_unstable.argument_parsing import Args, create_default_argument_parser
 from cmk.utils import password_store
 from requests.adapters import HTTPAdapter
@@ -88,6 +84,11 @@ _SECTIONS = [
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
+        name="ha_statistics",
+        path="monitor/system/ha-statistics",
+        min_version=_REST_VERSION,
+    ),
+    _SectionSpec(
         name="interfaces",
         path="monitor/system/interface?vdom=*&include_aggregate=true&include_vlan=true",
         min_version=_REST_VERSION,
@@ -99,7 +100,7 @@ _SECTIONS = [
     ),
     _SectionSpec(
         name="vdom_resources",
-        path="monitor/system/vdom-resource?vdom=*",
+        path="monitor/system/resource/usage",
         min_version=_REST_VERSION,
     ),
     _SectionSpec(
@@ -183,6 +184,14 @@ _SECTIONS = [
         path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true",
         min_version=_REST_VERSION,
     ),
+    _SectionSpec(
+        # SD-WAN performance SLA / health-checks (formerly "virtual-wan-link"), not to be
+        # confused with the classic "config system link-monitor" dead-gateway detection,
+        # which is exposed under a different endpoint and not covered here.
+        name="link_monitor",
+        path="monitor/virtual-wan/health-check?vdom=*",
+        min_version=_REST_VERSION,
+    ),
 ]
 
 
@@ -230,6 +239,13 @@ def parse_arguments(argv: Sequence[str] | None) -> Args:
         dest="ok_if_unmatured_branch",
         action="store_false",
         help="Disable OK override for immature branch upgrades",
+    )
+    parser.add_argument(
+        "--disable-firmware",
+        dest="disable_firmware",
+        action="store_true",
+        default=False,
+        help="Do not collect the firmware section",
     )
     parser.add_argument("server", type=str, help="Hostname or IP address")
     return parser.parse_args(argv)
@@ -426,7 +442,11 @@ def agent_fortios(args: Args) -> int:
     # initialize value store for switch serial number mapping
     json_store = JsonConcatenator()
 
-    for spec in _filter_applicable_sections(_SECTIONS):
+    sections = _SECTIONS
+    if getattr(args, "disable_firmware", False):
+        sections = [spec for spec in sections if spec.name != "firmware"]
+
+    for spec in _filter_applicable_sections(sections):
         try:
             data = None
             data = fortios.collect_section_data(spec)

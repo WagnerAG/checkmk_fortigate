@@ -22,7 +22,7 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 
 from __future__ import annotations
 
-from cmk.agent_based.v2 import Metric, Result, Service, State, CheckPlugin, CheckResult, DiscoveryResult
+from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
 
 
 def discovery_fortios_switch_uptime(section) -> DiscoveryResult:

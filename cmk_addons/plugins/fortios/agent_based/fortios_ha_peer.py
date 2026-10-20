@@ -23,11 +23,10 @@ Check_MK agent based checks to be used with agent_fortios Datasource
 from __future__ import annotations
 
 import json
-from typing import List, Optional, Mapping
-
-from pydantic import BaseModel
+from typing import List, Mapping, Optional
 
 from cmk.agent_based.v2 import AgentSection, CheckPlugin, CheckResult, DiscoveryResult, Result, Service, State
+from pydantic import BaseModel
 
 
 class HAPeer(BaseModel):

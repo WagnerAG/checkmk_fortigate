@@ -24,10 +24,8 @@ from __future__ import annotations
 
 import json
 
-from pydantic import BaseModel
-
-
 from cmk.agent_based.v2 import AgentSection, render
+from pydantic import BaseModel
 
 
 class TimeUnit(BaseModel):

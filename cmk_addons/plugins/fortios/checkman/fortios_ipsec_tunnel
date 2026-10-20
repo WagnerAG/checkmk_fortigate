@@ -6,8 +6,12 @@ distribution: check_mk
 description:
  This check monitors the IPSec tunnels of a Fortigate firewall.
  All tunnels are monitored by default.
+ The "fortios_ipsec_discovery" rule can be used to exclude entire tunnels
+ from discovery using regular expressions matched against the service name
+ (e.g. "IPSec Tunnel VDOM root MyTunnel").
  The "fortios_ipsec_check_parameters" rule can be used to configure the 
- tunnels ignored by name and remote subnet.
+ tunnels ignored by name and remote subnet, using regular expressions
+ (partial match) instead of exact names.
  A tunnel is displayed as {crit} if it is not active.
 
 

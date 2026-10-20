@@ -18,8 +18,8 @@
 from typing import Any, Mapping
 
 import pytest
-
 from cmk.agent_based.v2 import Metric, Result, Service, State
+
 from cmk_addons.plugins.fortios.agent_based.fortios_device_info_inventory import DeviceInfo, ModelInfo
 from cmk_addons.plugins.fortios.agent_based.fortios_system import check_fortios_system, discover_fortios_system
 

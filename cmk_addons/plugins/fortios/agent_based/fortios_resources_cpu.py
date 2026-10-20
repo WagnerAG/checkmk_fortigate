@@ -26,9 +26,7 @@ from typing import Any, Dict, Mapping
 
 from cmk.agent_based.v1 import check_levels
 from cmk.agent_based.v2 import CheckPlugin, CheckResult, DiscoveryResult, Metric, Result, Service, State
-from cmk.agent_based.v2.render import (
-    percent,
-)
+from cmk.agent_based.v2.render import percent
 
 from .fortios_resources import FortiResource
 
@@ -52,10 +50,6 @@ def check_fortios_resources_cpu(params: Mapping[str, Any], section: FortiResourc
         render_func=percent,
         boundaries=(0, 100),
     )
-
-    if len(section.vdoms) > 1:
-        for item in section.vdoms:
-            yield Metric(item.vdom, item.results.cpu, levels=cpu_levels, boundaries=(0, 100))
 
 
 check_plugin_fortios_resources_cpu = CheckPlugin(
