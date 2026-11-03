@@ -180,7 +180,10 @@ _SECTIONS = [
     ),
     _SectionSpec(
         name="certificates",
-        path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true",
+        # vdom=* is needed on multi-VDOM firewalls: without it only the global and the
+        # management VDOM certificates are returned, and certificates imported into
+        # another VDOM (e.g. SAML IdP/SP certificates) are missed.
+        path="monitor/system/available-certificates?scope=*&with_remote=true&with_ca=true&vdom=*",
         min_version=_REST_VERSION,
     ),
     _SectionSpec(

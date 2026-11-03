@@ -298,3 +298,54 @@ def test_check_fortios_certificates_returns_unknown_if_no_data() -> None:
     assert actual_check_result == [
         Result(state=State.UNKNOWN, summary="No certificate data available")
     ]
+
+
+def test_parse_fortios_certificates_all_vdoms() -> None:
+    # Response of available-certificates?vdom=* : one block per VDOM, global
+    # certificates are repeated in every block.
+    string_table = [
+        [
+            "["
+            '{"vdom": "root", "status": "success", "results": ['
+            '{"name": "Fortinet_Factory", "range": "global", "source": "factory", "valid_to": 2208988800, "q_ref": 1}'
+            "]}, "
+            '{"vdom": "vpn", "status": "success", "results": ['
+            '{"name": "Fortinet_Factory", "range": "global", "source": "factory", "valid_to": 2208988800, "q_ref": 3}, '
+            '{"name": "saml-idp", "range": "vdom", "source": "user", "valid_to": 2208988800, "q_ref": 1}'
+            "]}, "
+            '{"vdom": "dmz", "status": "success", "results": ['
+            '{"name": "Fortinet_Factory", "range": "global", "source": "factory", "valid_to": 2208988800, "q_ref": 0}, '
+            '{"name": "saml-idp", "range": "vdom", "source": "user", "valid_to": 2208988800, "q_ref": 0}'
+            "]}"
+            "]"
+        ]
+    ]
+
+    parsed = parse_fortios_certificates(string_table)
+
+    assert parsed is not None
+    by_name = {cert.display_name: cert for cert in parsed.certificates}
+    assert sorted(by_name) == ["Fortinet_Factory", "dmz/saml-idp", "vpn/saml-idp"]
+    assert by_name["Fortinet_Factory"].q_ref == 3
+    assert by_name["vpn/saml-idp"].vdom == "vpn"
+
+
+def test_check_fortios_certificates_only_referenced() -> None:
+    section = CertificateSet(
+        certificates=[
+            Certificate(name="in_use", source="user", valid_to=2208988800, q_ref=1, vdom="vpn", range="vdom"),
+            Certificate(name="expired_leftover", source="user", valid_to=1600000000, q_ref=0, vdom="vpn", range="vdom"),
+        ]
+    )
+
+    params = {**DEFAULT_CERT_PARAMS, "day_levels": ("fixed", (30, 7))}
+
+    default_result = list(check_fortios_certificates(params, section))[0]
+    assert default_result.state == State.CRIT
+    assert "vpn/expired_leftover" in default_result.details
+
+    filtered_result = list(check_fortios_certificates({**params, "only_referenced": True}, section))[0]
+    assert filtered_result.state == State.OK
+    assert filtered_result.summary == "Certificates: 1, OK: 1, WARN: 0, CRIT: 0"
+    assert "vpn/in_use" in filtered_result.details
+    assert "expired_leftover" not in filtered_result.details
