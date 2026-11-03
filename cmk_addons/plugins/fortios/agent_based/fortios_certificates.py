@@ -74,6 +74,8 @@ class Certificate(BaseModel):
     is_built_in: Optional[bool] = None
     is_ca: Optional[bool] = None
     ext: Optional[List[CertificateExtension]] = None
+    q_ref: Optional[int] = None
+    vdom: Optional[str] = None
 
     expires_at: Optional[datetime] = Field(default=None)
     seconds_until_expiry: Optional[int] = Field(default=None)
@@ -86,6 +88,12 @@ class Certificate(BaseModel):
             delta = self.expires_at - datetime.now(timezone.utc)
             self.seconds_until_expiry = int(delta.total_seconds())
         return self
+
+    @property
+    def display_name(self) -> str:
+        if self.vdom and self.range != "global":
+            return f"{self.vdom}/{self.name}"
+        return self.name
 
     def human_expiry(self) -> str:
         if self.expires_at is None or self.seconds_until_expiry is None:
@@ -114,6 +122,7 @@ class CertificateSet(BaseModel):
     crit_days: int = 7
     allowed_sources: list[str] = Field(default_factory=list)
     discover_ca: bool = True
+    only_referenced: bool = False
 
     total: int = 0
     ok_count: int = 0
@@ -131,6 +140,8 @@ class CertificateSet(BaseModel):
             if self.allowed_sources and cert.source not in self.allowed_sources:
                 continue
             if not self.discover_ca and cert.is_ca is True:
+                continue
+            if self.only_referenced and not cert.q_ref:
                 continue
             relevant_certs.append(cert)
 
@@ -181,7 +192,7 @@ class CertificateSet(BaseModel):
 
         for cert in self.relevant_certificates:
             grouped_lines.setdefault(cert.state, []).append(
-                f"[{cert.state.name}] {cert.name}: expires at {cert.human_expiry()}"
+                f"[{cert.state.name}] {cert.display_name}: expires at {cert.human_expiry()}"
             )
 
         blocks: list[str] = []
@@ -199,16 +210,47 @@ def parse_fortios_certificates(string_table: list[list[str]]) -> CertificateSet 
     except (ValueError, IndexError, TypeError):
         return None
 
-    if isinstance(json_data, list):
-        certs_raw = json_data
-    else:
-        certs_raw = json_data.get("results", [])
-
-    if not certs_raw:
+    certificates = _flatten_vdom_results(json_data)
+    if not certificates:
         return None
 
-    certificates = [Certificate(**item) for item in certs_raw]
     return CertificateSet(certificates=certificates)
+
+
+def _flatten_vdom_results(json_data: Any) -> list[Certificate]:
+    """Turn the API response into one list of certificates.
+
+    With ``vdom=*`` FortiOS returns one block per VDOM
+    (``[{"vdom": ..., "results": [...]}, ...]``). Global certificates show up in
+    every block; they are kept once, with the highest reference count seen.
+    VDOM certificates are kept per VDOM, since the same name in two VDOMs is two
+    different certificates. A plain response (single dict, or a bare list of
+    certificates) is still accepted.
+    """
+    if isinstance(json_data, dict):
+        blocks = [json_data]
+    elif isinstance(json_data, list) and json_data and all(isinstance(b, dict) and "results" in b for b in json_data):
+        blocks = json_data
+    elif isinstance(json_data, list):
+        blocks = [{"results": json_data}]
+    else:
+        return []
+
+    by_key: dict[tuple[str, str], Certificate] = {}
+    for block in blocks:
+        vdom = block.get("vdom")
+        for item in block.get("results") or []:
+            if not isinstance(item, dict) or "name" not in item:
+                continue
+            cert = Certificate(**{**item, "vdom": vdom})
+            key = ("", cert.name) if cert.range == "global" else (vdom or "", cert.name)
+            known = by_key.get(key)
+            if known is None:
+                by_key[key] = cert
+            elif (cert.q_ref or 0) > (known.q_ref or 0):
+                known.q_ref = cert.q_ref
+
+    return list(by_key.values())
 
 
 agent_section_fortios_certificates = AgentSection(
@@ -220,6 +262,7 @@ DEFAULT_CERT_PARAMS = {
     "day_levels": ("fixed", (30, 7)),
     "source": ["factory", "user"],
     "discover_ca": True,
+    "only_referenced": False,
 }
 
 
@@ -240,6 +283,7 @@ def _filtered_section(section: CertificateSet, params: Mapping[str, Any]) -> Cer
     warn_days, crit_days = _extract_day_levels(params)
     allowed_sources = params.get("source", DEFAULT_CERT_PARAMS["source"])
     discover_ca = params.get("discover_ca", DEFAULT_CERT_PARAMS["discover_ca"])
+    only_referenced = params.get("only_referenced", DEFAULT_CERT_PARAMS["only_referenced"])
 
     return CertificateSet.model_validate(
         {
@@ -248,6 +292,7 @@ def _filtered_section(section: CertificateSet, params: Mapping[str, Any]) -> Cer
             "crit_days": crit_days,
             "allowed_sources": allowed_sources,
             "discover_ca": discover_ca,
+            "only_referenced": only_referenced,
         }
     )
 

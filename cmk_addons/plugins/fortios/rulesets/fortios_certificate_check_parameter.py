@@ -63,6 +63,20 @@ def _form_check_fortios_certificate_expiry() -> Dictionary:
                 ),
                 required=True,
             ),
+            "only_referenced": DictElement(
+                parameter_form=BooleanChoice(
+                    title=Title("Only certificates in use"),
+                    label=Title("Ignore certificates that are not referenced in the configuration"),
+                    help_text=Help(
+                        "FortiOS counts for each certificate how often the configuration refers to it "
+                        "(e.g. SSL VPN server certificate, SAML SP/IdP certificate, admin GUI). "
+                        "If enabled, certificates with no reference are left out, so expired leftovers "
+                        "do not turn the service CRIT."
+                    ),
+                    prefill=DefaultValue(False),
+                ),
+                required=False,
+            ),
         },
     )
 
